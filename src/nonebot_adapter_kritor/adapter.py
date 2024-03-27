@@ -19,7 +19,7 @@ from grpclib.client import Channel
 from betterproto import which_one_of, Casing
 from .protos.kritor.authentication import AuthenticateRequest, AuthenticationServiceStub, AuthenticateResponseAuthenticateResponseCode
 from .protos.kritor.event import EventServiceStub, RequestPushEvent, EventType
-from .event import MessageEventType
+from .event import MessageEventType, RequestEventType, NoticeEventType
 class Adapter(BaseAdapter):
     bots: Dict[str, Bot]
 
@@ -69,11 +69,26 @@ class Adapter(BaseAdapter):
         async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_NOTICE)):
             notice = which_one_of(event.notice, "notice")
             log("DEBUG", f"Received notice event {notice[0]}: {notice[1]}")
+            data = {
+                "__type__": notice[0],
+                "time": event.notice.time,
+                **notice[1].to_pydict(casing=Casing.SNAKE)  # type: ignore
+            }
+            event = type_validate_python(RequestEventType, data)
+            asyncio.create_task(bot.handle_event(event))
 
     async def _listen_request(self, bot: Bot, service: EventServiceStub):
         async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_REQUEST)):
             request = which_one_of(event.request, "request")
             log("DEBUG", f"Received request event {request[0]}: {request[1]}")
+            data = {
+                "__type__": request[0],
+                "time": event.request.time,
+                **request[1].to_pydict(casing=Casing.SNAKE)  # type: ignore
+            }
+            event = type_validate_python(NoticeEventType, data)
+            event.check_tome(bot)
+            asyncio.create_task(bot.handle_event(event))
 
     async def _listen_core(self, bot: Bot, service: EventServiceStub):
         async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_CORE_EVENT)):
