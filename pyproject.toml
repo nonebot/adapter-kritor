@@ -1,0 +1,30 @@
+[project]
+name = "nonebot-adapter-kritor"
+version = "0.1.0"
+description = "Nonebot Adapter for Kritor Protocol"
+authors = [
+    {name = "rf_tar_railt", email = "rf_tar_railt@qq.com"},
+]
+dependencies = [
+    "betterproto>=1.2.5",
+    "nonebot2>=2.2.1",
+]
+requires-python = ">=3.9"
+readme = "README.md"
+license = {text = "MIT"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "betterproto[compiler]>=1.2.5",
+    "black>=24.3.0",
+    "isort>=5.13.2",
+    "ruff>=0.3.4",
+]
