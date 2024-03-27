@@ -1,34 +1,36 @@
-import json
 import asyncio
+from typing import Any, Optional
 from typing_extensions import override
-from typing import Any, Dict, List, Literal, Optional
 
-from nonebot.utils import escape_tag
-from nonebot.compat import PYDANTIC_V2, model_dump, type_validate_python
+from grpclib.client import Channel
 from nonebot.drivers import Driver
-
 from nonebot import get_plugin_config
+from betterproto import Casing, which_one_of
+from nonebot.compat import type_validate_python
 from nonebot.adapters import Adapter as BaseAdapter
 
 from .bot import Bot
 from .utils import API, log
 from .config import Config, ClientInfo
 from .exception import ApiNotAvailable
+from .event import NoticeEventType, MessageEventType, RequestEventType
+from .protos.kritor.event import EventType, EventServiceStub, RequestPushEvent
+from .protos.kritor.authentication import (
+    AuthenticateRequest,
+    AuthenticationServiceStub,
+    AuthenticateResponseAuthenticateResponseCode,
+)
 
-from grpclib.client import Channel
-from betterproto import which_one_of, Casing
-from .protos.kritor.authentication import AuthenticateRequest, AuthenticationServiceStub, AuthenticateResponseAuthenticateResponseCode
-from .protos.kritor.event import EventServiceStub, RequestPushEvent, EventType
-from .event import MessageEventType, RequestEventType, NoticeEventType
+
 class Adapter(BaseAdapter):
-    bots: Dict[str, Bot]
+    bots: dict[str, Bot]
 
     @override
     def __init__(self, driver: Driver, **kwargs: Any):
         super().__init__(driver, **kwargs)
         # 读取适配器所需的配置项
         self.kritor_config: Config = get_plugin_config(Config)
-        self.tasks: List[asyncio.Task] = []  # 存储 连接 任务
+        self.tasks: list[asyncio.Task] = []  # 存储 连接 任务
         self.setup()
 
     @classmethod
@@ -57,7 +59,6 @@ class Adapter(BaseAdapter):
             return_exceptions=True,
         )
 
-
     async def _listen_message(self, bot: Bot, service: EventServiceStub):
         async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_MESSAGE)):
             log("DEBUG", f"Received message event: {event.message}")
@@ -72,7 +73,7 @@ class Adapter(BaseAdapter):
             data = {
                 "__type__": notice[0],
                 "time": event.notice.time,
-                **notice[1].to_pydict(casing=Casing.SNAKE)  # type: ignore
+                **notice[1].to_pydict(casing=Casing.SNAKE),  # type: ignore
             }
             event = type_validate_python(RequestEventType, data)
             asyncio.create_task(bot.handle_event(event))
@@ -84,7 +85,7 @@ class Adapter(BaseAdapter):
             data = {
                 "__type__": request[0],
                 "time": event.request.time,
-                **request[1].to_pydict(casing=Casing.SNAKE)  # type: ignore
+                **request[1].to_pydict(casing=Casing.SNAKE),  # type: ignore
             }
             event = type_validate_python(NoticeEventType, data)
             event.check_tome(bot)
@@ -102,16 +103,13 @@ class Adapter(BaseAdapter):
             response = await auth.authenticate(request)
             if response.code != AuthenticateResponseAuthenticateResponseCode.OK:
                 log(
-                    "ERROR", 
+                    "ERROR",
                     f"<r><bg #f8bbd0>Account {info.account} authenticate failed\n"
                     f"Error code: {response.code}"
-                    f"Error message: {response.msg}</bg #f8bbd0></r>"
+                    f"Error message: {response.msg}</bg #f8bbd0></r>",
                 )
                 return
-            log(
-                "INFO",
-                f"<y>Account {info.account} authenticate success</y>"
-            )
+            log("INFO", f"<y>Account {info.account} authenticate success</y>")
             bot = Bot(self, info.account, info, channel)
             self.bot_connect(bot)
             event = EventServiceStub(channel)
@@ -119,7 +117,7 @@ class Adapter(BaseAdapter):
                 asyncio.create_task(self._listen_message(bot, event)),
                 asyncio.create_task(self._listen_notice(bot, event)),
                 asyncio.create_task(self._listen_request(bot, event)),
-                asyncio.create_task(self._listen_core(bot, event))
+                asyncio.create_task(self._listen_core(bot, event)),
             ]
             await asyncio.wait(listens, return_when=asyncio.FIRST_EXCEPTION)
         for task in listens:

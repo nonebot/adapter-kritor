@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from pydantic import Field, BaseModel
 
 
@@ -15,5 +13,5 @@ class ClientInfo(BaseModel):
 
 
 class Config(BaseModel):
-    kritor_clients: List[ClientInfo] = Field(default_factory=list)
+    kritor_clients: list[ClientInfo] = Field(default_factory=list)
     """client 配置"""

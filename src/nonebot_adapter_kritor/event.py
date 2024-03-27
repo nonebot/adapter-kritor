@@ -1,22 +1,27 @@
 from copy import deepcopy
-from typing_extensions import override
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 from datetime import datetime
+from typing_extensions import override
+from typing import TYPE_CHECKING, Any, Union, Literal, Optional
+
 from pydantic import Field
 from nonebot.utils import escape_tag
 from nonebot.compat import model_dump
-
 from nonebot.adapters import Event as BaseEvent
 
 from nonebot_adapter_kritor.bot import Bot
 
 from .compat import model_validator
-from .model import ContactType, Sender, Group, Friend, Stranger, Guild, StrangerFromGroup, Nearby
-from .message import Message, Reply
-from .protos.kritor.event import GroupMemberIncreasedNoticeGroupMemberIncreasedType, GroupMemberDecreasedNoticeGroupMemberDecreasedType, GroupMemberBanNoticeGroupMemberBanType
+from .message import Reply, Message
+from .model import Group, Guild, Friend, Nearby, Sender, Stranger, ContactType, StrangerFromGroup
+from .protos.kritor.event import (
+    GroupMemberBanNoticeGroupMemberBanType,
+    GroupMemberDecreasedNoticeGroupMemberDecreasedType,
+    GroupMemberIncreasedNoticeGroupMemberIncreasedType,
+)
 
 if TYPE_CHECKING:
     from .bot import Bot
+
 
 class Event(BaseEvent):
 
@@ -112,11 +117,9 @@ class FriendMessage(MessageEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = (
-            f"Message from {self.sender.nick or self.sender.uin or self.sender.uid}: "
-            f"{self.get_message()}"
-        )
+        text = f"Message from {self.sender.nick or self.sender.uin or self.sender.uid}: " f"{self.get_message()}"
         return escape_tag(text)
+
 
 class GroupMessage(MessageEvent):
     contact: Group
@@ -134,6 +137,7 @@ class GroupMessage(MessageEvent):
         )
         return escape_tag(text)
 
+
 class GuildMessage(MessageEvent):
     contact: Guild
 
@@ -150,6 +154,7 @@ class GuildMessage(MessageEvent):
         )
         return escape_tag(text)
 
+
 class StrangerMessage(MessageEvent):
     contact: Stranger
 
@@ -160,10 +165,10 @@ class StrangerMessage(MessageEvent):
     @override
     def get_event_description(self) -> str:
         text = (
-            f"Message from stranger {self.sender.nick or self.sender.uin or self.sender.uid}: "
-            f"{self.get_message()}"
+            f"Message from stranger {self.sender.nick or self.sender.uin or self.sender.uid}: " f"{self.get_message()}"
         )
         return escape_tag(text)
+
 
 class TempMessage(MessageEvent):
     contact: StrangerFromGroup
@@ -181,6 +186,7 @@ class TempMessage(MessageEvent):
         )
         return escape_tag(text)
 
+
 class NearbyMessage(MessageEvent):
     contact: Nearby
 
@@ -190,11 +196,9 @@ class NearbyMessage(MessageEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = (
-            f"Message from nearby {self.sender.nick or self.sender.uin or self.sender.uid}: "
-            f"{self.get_message()}"
-        )
+        text = f"Message from nearby {self.sender.nick or self.sender.uin or self.sender.uid}: " f"{self.get_message()}"
         return escape_tag(text)
+
 
 MessageEventType = Union[
     Union[GroupMessage, FriendMessage, GuildMessage, StrangerMessage, TempMessage, NearbyMessage],
@@ -209,15 +213,15 @@ class RequestEvent(Event):
     @override
     def get_type(self) -> str:
         return "request"
-    
+
     @override
     def get_event_name(self) -> str:
         return f"request.{self.__type__}"
-    
+
     @override
     def is_tome(self) -> bool:
         return True
-    
+
 
 class FriendApplyRequest(RequestEvent):
     __type__: Literal["friend_apply"] = "friend_apply"
@@ -229,19 +233,17 @@ class FriendApplyRequest(RequestEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = (
-            f"Friend apply from {self.applier_uid or self.applier_uin}: {self.message}"
-        )
+        text = f"Friend apply from {self.applier_uid or self.applier_uin}: {self.message}"
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.applier_uin or self.applier_uid}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.applier_uin or self.applier_uid}"
-    
+
 
 class GroupApplyRequest(RequestEvent):
     __type__: Literal["group_apply"] = "group_apply"
@@ -256,20 +258,17 @@ class GroupApplyRequest(RequestEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = (
-            f"Group apply from {self.applier_uid or self.applier_uin} "
-            f"in group {self.group_id}: {self.reason}"
-        )
+        text = f"Group apply from {self.applier_uid or self.applier_uin} " f"in group {self.group_id}: {self.reason}"
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.applier_uin or self.applier_uid}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.group_id}_{self.applier_uin or self.applier_uid}"
-    
+
 
 class InvitedJoinGroupRequest(RequestEvent):
     __type__: Literal["invited_group"] = "invited_group"
@@ -281,19 +280,17 @@ class InvitedJoinGroupRequest(RequestEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = (
-            f"Invited to group {self.group_id} by {self.inviter_uid or self.inviter_uin}"
-        )
+        text = f"Invited to group {self.group_id} by {self.inviter_uid or self.inviter_uin}"
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.inviter_uin or self.inviter_uid}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.group_id}_{self.inviter_uin or self.inviter_uid}"
-    
+
 
 RequestEventType = Union[
     Union[FriendApplyRequest, GroupApplyRequest, InvitedJoinGroupRequest],
@@ -309,7 +306,7 @@ class NoticeEvent(Event):
     @override
     def get_type(self) -> str:
         return "notice"
-    
+
     @override
     def get_event_name(self) -> str:
         return f"notice.{self.__type__}"
@@ -334,15 +331,13 @@ class FriendPokeNotice(NoticeEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = (
-            f"Friend {self.operator_uid or self.operator_uin} send nudge"
-        )
+        text = f"Friend {self.operator_uid or self.operator_uin} send nudge"
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.operator_uin or self.operator_uid}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.operator_uin or self.operator_uid}"
@@ -350,6 +345,7 @@ class FriendPokeNotice(NoticeEvent):
     @override
     def is_tome(self) -> bool:
         return True
+
 
 class FriendRecallNotice(NoticeEvent):
     __type__: Literal["friend_recall"] = "friend_recall"
@@ -361,15 +357,13 @@ class FriendRecallNotice(NoticeEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = (
-            f"Friend {self.operator_uid or self.operator_uin} recall message {self.message_id}"
-        )
+        text = f"Friend {self.operator_uid or self.operator_uin} recall message {self.message_id}"
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.operator_uin or self.operator_uid}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.operator_uin or self.operator_uid}"
@@ -377,6 +371,7 @@ class FriendRecallNotice(NoticeEvent):
     @override
     def is_tome(self) -> bool:
         return True
+
 
 class GroupUniqueTitleChangedNotice(NoticeEvent):
     __type__: Literal["group_member_unique_title_changed"] = "group_member_unique_title_changed"
@@ -387,19 +382,17 @@ class GroupUniqueTitleChangedNotice(NoticeEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = (
-            f"{self.target}'s unique title in Group {self.group_id} changed to {self.title}"
-        )
+        text = f"{self.target}'s unique title in Group {self.group_id} changed to {self.title}"
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.target}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.group_id}_{self.target}"
-    
+
 
 class GroupEssenceMessaegNotice(NoticeEvent):
     __type__: Literal["group_essence_changed"] = "group_essence_changed"
@@ -414,23 +407,21 @@ class GroupEssenceMessaegNotice(NoticeEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = (
-            f"Group {self.group_id} essence message {self.message_id} changed by {self.operator_uid or self.operator_uin}"
-        )
+        text = f"Group {self.group_id} essence message {self.message_id} changed by {self.operator_uid or self.operator_uin}"
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.operator_uin or self.operator_uid}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.group_id}_{self.operator_uin or self.operator_uid}"
-    
+
     @override
     def check_tome(self, bot: Bot) -> None:
         self.to_me = f"{self.target_uin or self.target_uid}" == bot.self_id
-    
+
 
 class GroupPokeNotice(NoticeEvent):
     __type__: Literal["group_poke"] = "group_poke"
@@ -446,15 +437,13 @@ class GroupPokeNotice(NoticeEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = (
-            f"Group {self.group_id} {self.operator_uid or self.operator_uin} send nudge"
-        )
+        text = f"Group {self.group_id} {self.operator_uid or self.operator_uin} send nudge"
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.operator_uin or self.operator_uid}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.group_id}_{self.operator_uin or self.operator_uid}"
@@ -462,6 +451,7 @@ class GroupPokeNotice(NoticeEvent):
     @override
     def check_tome(self, bot: Bot) -> None:
         self.to_me = f"{self.target_uin or self.target_uid}" == bot.self_id
+
 
 class GroupCardChangedNotice(NoticeEvent):
     __type__: Literal["group_card_changed"] = "group_card_changed"
@@ -475,15 +465,13 @@ class GroupCardChangedNotice(NoticeEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = (
-            f"Group {self.group_id} {self.operator_uid or self.operator_uin} change {self.target_uid or self.target_uin}'s card to {self.new_card}"
-        )
+        text = f"Group {self.group_id} {self.operator_uid or self.operator_uin} change {self.target_uid or self.target_uin}'s card to {self.new_card}"
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.operator_uin or self.operator_uid}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.group_id}_{self.operator_uin or self.operator_uid}"
@@ -506,19 +494,17 @@ class GroupMemberIncreasedNotice(NoticeEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = (
-            f"New member {self.target_uid or self.target_uin} joined Group {self.group_id} by {self.operator_uid or self.operator_uin}"
-        )
+        text = f"New member {self.target_uid or self.target_uin} joined Group {self.group_id} by {self.operator_uid or self.operator_uin}"
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.target_uin or self.target_uid}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.group_id}_{self.target_uin or self.target_uid}"
-    
+
 
 class GroupMemberDecreasedNotice(NoticeEvent):
     __type__: Literal["group_member_decrease"] = "group_member_decrease"
@@ -533,19 +519,17 @@ class GroupMemberDecreasedNotice(NoticeEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = (
-            f"Member {self.target_uid or self.target_uin} left Group {self.group_id} by {self.operator_uid or self.operator_uin}"
-        )
+        text = f"Member {self.target_uid or self.target_uin} left Group {self.group_id} by {self.operator_uid or self.operator_uin}"
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.target_uin or self.target_uid}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.group_id}_{self.target_uin or self.target_uid}"
-    
+
 
 class GroupAdminChangedNotice(NoticeEvent):
     __type__: Literal["group_admin_change"] = "group_admin_change"
@@ -558,20 +542,20 @@ class GroupAdminChangedNotice(NoticeEvent):
     @override
     def get_event_description(self) -> str:
         text = (
-            f"Group {self.group_id} {self.target_uid or self.target_uin} become admin"
-        ) if self.is_admin else (
-            f"Group {self.group_id} {self.target_uid or self.target_uin} lose admin"
+            (f"Group {self.group_id} {self.target_uid or self.target_uin} become admin")
+            if self.is_admin
+            else (f"Group {self.group_id} {self.target_uid or self.target_uin} lose admin")
         )
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.target_uin or self.target_uid}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.group_id}_{self.target_uin or self.target_uid}"
-    
+
 
 class GroupMemberBanNotice(NoticeEvent):
     __type__: Literal["group_member_ban"] = "group_member_ban"
@@ -588,20 +572,24 @@ class GroupMemberBanNotice(NoticeEvent):
     @override
     def get_event_description(self) -> str:
         text = (
-            f"Group {self.group_id} {self.target_uid or self.target_uin} banned by {self.operator_uid or self.operator_uin}"
-        ) if self.duration else (
-            f"Group {self.group_id} {self.target_uid or self.target_uin} unbanned by {self.operator_uid or self.operator_uin}"
+            (
+                f"Group {self.group_id} {self.target_uid or self.target_uin} banned by {self.operator_uid or self.operator_uin}"
+            )
+            if self.duration
+            else (
+                f"Group {self.group_id} {self.target_uid or self.target_uin} unbanned by {self.operator_uid or self.operator_uin}"
+            )
         )
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.target_uin or self.target_uid}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.group_id}_{self.target_uin or self.target_uid}"
-    
+
 
 class GroupRecallNotice(NoticeEvent):
     __type__: Literal["group_recall"] = "group_recall"
@@ -617,15 +605,13 @@ class GroupRecallNotice(NoticeEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = (
-            f"Group {self.group_id} {self.operator_uid or self.operator_uin} recall message {self.message_id}"
-        )
+        text = f"Group {self.group_id} {self.operator_uid or self.operator_uin} recall message {self.message_id}"
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.operator_uin or self.operator_uid}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.group_id}_{self.operator_uin or self.operator_uid}"
@@ -633,6 +619,7 @@ class GroupRecallNotice(NoticeEvent):
     @override
     def check_tome(self, bot: Bot) -> None:
         self.to_me = f"{self.target_uin or self.target_uid}" == bot.self_id
+
 
 class GroupSignInNotice(NoticeEvent):
     __type__: Literal["group_sign_in"] = "group_sign_in"
@@ -646,15 +633,13 @@ class GroupSignInNotice(NoticeEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = (
-            f"Group {self.group_id} {self.target_uid or self.target_uin} sign in"
-        )
+        text = f"Group {self.group_id} {self.target_uid or self.target_uin} sign in"
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.target_uin or self.target_uid}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.group_id}_{self.target_uin or self.target_uid}"
@@ -662,6 +647,7 @@ class GroupSignInNotice(NoticeEvent):
     @override
     def is_tome(self) -> bool:
         return False
+
 
 class GroupWholeBanNotice(NoticeEvent):
     __type__: Literal["group_whole_ban"] = "group_whole_ban"
@@ -674,16 +660,16 @@ class GroupWholeBanNotice(NoticeEvent):
     @override
     def get_event_description(self) -> str:
         text = (
-            f"Group {self.group_id} {self.operator_uid or self.operator_uin} whole banned"
-        ) if self.is_ban else (
-            f"Group {self.group_id} {self.operator_uid or self.operator_uin} whole unbanned"
+            (f"Group {self.group_id} {self.operator_uid or self.operator_uin} whole banned")
+            if self.is_ban
+            else (f"Group {self.group_id} {self.operator_uid or self.operator_uin} whole unbanned")
         )
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.operator_uin or self.operator_uid}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.group_id}_{self.operator_uin or self.operator_uid}"
@@ -691,6 +677,7 @@ class GroupWholeBanNotice(NoticeEvent):
     @override
     def is_tome(self) -> bool:
         return True
+
 
 class FriendFileUploadedNotice(NoticeEvent):
     __type__: Literal["friend_file_uploaded"] = "friend_file_uploaded"
@@ -707,15 +694,13 @@ class FriendFileUploadedNotice(NoticeEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = (
-            f"Friend {self.operator_uid or self.operator_uin} uploaded file {self.file_name}"
-        )
+        text = f"Friend {self.operator_uid or self.operator_uin} uploaded file {self.file_name}"
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.operator_uin or self.operator_uid}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.operator_uin or self.operator_uid}"
@@ -723,6 +708,7 @@ class FriendFileUploadedNotice(NoticeEvent):
     @override
     def is_tome(self) -> bool:
         return True
+
 
 class GroupFileUploadedNotice(NoticeEvent):
     __type__: Literal["group_file_uploaded"] = "group_file_uploaded"
@@ -740,15 +726,13 @@ class GroupFileUploadedNotice(NoticeEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = (
-            f"Group {self.group_id} {self.operator_uid or self.operator_uin} uploaded file {self.file_name}"
-        )
+        text = f"Group {self.group_id} {self.operator_uid or self.operator_uin} uploaded file {self.file_name}"
         return escape_tag(text)
-    
+
     @override
     def get_user_id(self) -> str:
         return f"{self.operator_uin or self.operator_uid}"
-    
+
     @override
     def get_session_id(self) -> str:
         return f"{self.group_id}_{self.operator_uin or self.operator_uid}"
@@ -757,13 +741,24 @@ class GroupFileUploadedNotice(NoticeEvent):
     def is_tome(self) -> bool:
         return False
 
+
 NoticeEventType = Union[
     Union[
-        FriendPokeNotice, FriendRecallNotice, GroupUniqueTitleChangedNotice,
-        GroupEssenceMessaegNotice, GroupPokeNotice, GroupCardChangedNotice,
-        GroupMemberIncreasedNotice, GroupMemberDecreasedNotice, GroupAdminChangedNotice,
-        GroupMemberBanNotice, GroupRecallNotice, GroupSignInNotice, GroupWholeBanNotice,
-        FriendFileUploadedNotice, GroupFileUploadedNotice
+        FriendPokeNotice,
+        FriendRecallNotice,
+        GroupUniqueTitleChangedNotice,
+        GroupEssenceMessaegNotice,
+        GroupPokeNotice,
+        GroupCardChangedNotice,
+        GroupMemberIncreasedNotice,
+        GroupMemberDecreasedNotice,
+        GroupAdminChangedNotice,
+        GroupMemberBanNotice,
+        GroupRecallNotice,
+        GroupSignInNotice,
+        GroupWholeBanNotice,
+        FriendFileUploadedNotice,
+        GroupFileUploadedNotice,
     ],
     NoticeEvent,
 ]

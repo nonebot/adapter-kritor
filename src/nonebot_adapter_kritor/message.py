@@ -1,17 +1,23 @@
 from io import BytesIO
 from pathlib import Path
-from typing_extensions import override
+from collections.abc import Iterable
 from dataclasses import field, dataclass
-from typing import ClassVar, List, Literal, Type, TypedDict, Union, Iterable, Optional
-from typing_extensions import NotRequired
+from typing_extensions import NotRequired, override
+from typing import Union, Literal, ClassVar, Optional, TypedDict
 
-
+from betterproto import Casing, which_one_of
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
 
-from betterproto import which_one_of, Casing
-from .protos.kritor.common import Element, ElementElementType, ImageElementImageType, MusicElementMusicPlatform, ContactElement, Scene as KritorScene
 from .model import SceneType
+from .protos.kritor.common import Scene as KritorScene
+from .protos.kritor.common import (
+    Element,
+    ContactElement,
+    ElementElementType,
+    ImageElementImageType,
+    MusicElementMusicPlatform,
+)
 
 
 class MessageSegment(BaseMessageSegment["Message"]):
@@ -23,7 +29,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @classmethod
     @override
-    def get_message_class(cls) -> Type["Message"]:
+    def get_message_class(cls) -> type["Message"]:
         # 返回适配器的 Message 类型本身
         return Message
 
@@ -45,11 +51,11 @@ class MessageSegment(BaseMessageSegment["Message"]):
     def is_text(self) -> bool:
         # 判断该消息段是否为纯文本
         return self.type == "text"
-    
+
     @staticmethod
     def text(content: str) -> "Text":
         return Text("text", {"text": content})
-    
+
     @staticmethod
     def at(uid: str) -> "At":
         return At("at", {"uid": uid})
@@ -61,15 +67,15 @@ class MessageSegment(BaseMessageSegment["Message"]):
     @staticmethod
     def face(fid: int, is_big: bool = False) -> "Face":
         return Face("face", {"id": fid, "is_big": is_big})
-    
+
     @staticmethod
     def bubble_face(fid: int, count: int) -> "BubbleFace":
         return BubbleFace("buble_face", {"id": fid, "count": count})
-    
+
     @staticmethod
     def reply(message_id: str) -> "Reply":
         return Reply("reply", {"message_id": message_id})
-    
+
     @staticmethod
     def image(
         url: Optional[str] = None,
@@ -84,7 +90,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         if raw:
             return Image("image", {"file": raw if isinstance(raw, bytes) else raw.getvalue()})
         raise ValueError("image need at least one of url, path and raw")
-    
+
     @staticmethod
     def voice(
         url: Optional[str] = None,
@@ -99,7 +105,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         if raw:
             return Voice("voice", {"file": raw if isinstance(raw, bytes) else raw.getvalue()})
         raise ValueError("voice need at least one of url, path and raw")
-    
+
     @staticmethod
     def video(
         url: Optional[str] = None,
@@ -114,17 +120,17 @@ class MessageSegment(BaseMessageSegment["Message"]):
         if raw:
             return Video("video", {"file": raw if isinstance(raw, bytes) else raw.getvalue()})
         raise ValueError("video need at least one of url, path and raw")
-    
+
     @staticmethod
     def basketball(id_: int) -> "Basketball":
         """投篮"""
         return Basketball("basketball", {"id": id_})
-    
+
     @staticmethod
     def rps(id_: int) -> "Rps":
         """石头剪刀布"""
         return Rps("rps", {"id": id_})
-    
+
     @staticmethod
     def dice(id_: int) -> "Dice":
         """骰子"""
@@ -133,7 +139,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
     @staticmethod
     def poke(id_: int, type_: int, strength: int) -> "Poke":
         """戳一戳，即带有窗口抖动效果的消息
-        
+
         请务必与双击头像功能区分。
 
         Args:
@@ -142,63 +148,56 @@ class MessageSegment(BaseMessageSegment["Message"]):
             strength: 戳一戳强度
         """
         return Poke("poke", {"id": id_, "type": type_, "strength": strength})
-    
+
     @staticmethod
     def music(
-        platform: Literal["qq", "netease", "custom"],
-        url: str,
-        audio_url: str,
-        title: str,
-        author: str,
-        pic_url: str
+        platform: Literal["qq", "netease", "custom"], url: str, audio_url: str, title: str, author: str, pic_url: str
     ) -> "Music":
-        _platform = MusicElementMusicPlatform.QQ if platform == "qq" else MusicElementMusicPlatform.NetEase if platform == "netease" else MusicElementMusicPlatform.Custom
+        _platform = (
+            MusicElementMusicPlatform.QQ
+            if platform == "qq"
+            else MusicElementMusicPlatform.NetEase if platform == "netease" else MusicElementMusicPlatform.Custom
+        )
         return Music(
             "music",
             {
                 "platform": _platform,
-                "custom": {
-                    "url": url,
-                    "audio": audio_url,
-                    "title": title,
-                    "author": author,
-                    "pic": pic_url
-                }
-            }
+                "custom": {"url": url, "audio": audio_url, "title": title, "author": author, "pic": pic_url},
+            },
         )
-    
+
     @staticmethod
     def weather(city: str, code: str) -> "Weather":
         return Weather("weather", {"city": city, "code": code})
-    
+
     @staticmethod
     def location(lat: float, lon: float, title: str, content: str) -> "Location":
         return Location("location", {"lat": lat, "lon": lon, "title": title, "content": content})
-    
+
     @staticmethod
     def share(url: str, title: str, content: str, image_url: str) -> "Share":
         return Share("share", {"url": url, "title": title, "content": content, "image": image_url})
-    
+
     @staticmethod
     def market_face(id_: int) -> "MarketFace":
         return MarketFace("market_face", {"id": id_})
-    
+
     @staticmethod
     def forward(res_id: str, uniseq: str, summary: str, description: str) -> "Forward":
         return Forward("forward", {"res_id": res_id, "uniseq": uniseq, "summary": summary, "description": description})
-    
+
     @staticmethod
     def contact(type_: SceneType, id_: str) -> "Contact":
         return Contact("contact", {"type": type_, "id": id_})
-    
+
     @staticmethod
     def json(json: str) -> "Json":
         return Json("json", {"json": json})
-    
+
     @staticmethod
     def xml(xml: str) -> "Xml":
         return Xml("xml", {"xml": xml})
-    
+
     @staticmethod
     def markdown(markdown: str) -> "Markdown":
         return Markdown("markdown", {"markdown": markdown})
@@ -434,10 +433,7 @@ class Contact(MessageSegment, element_type=ElementElementType.CONTACT):
     def dump(self) -> "Element":
         return Element(
             type=ElementElementType.CONTACT,
-            contact=ContactElement(
-                scene=KritorScene(self.data["type"].value),
-                peer=self.data["id"]
-            )
+            contact=ContactElement(scene=KritorScene(self.data["type"].value), peer=self.data["id"]),
         )
 
 
@@ -485,8 +481,8 @@ class Markdown(MessageSegment, element_type=ElementElementType.MARKDOWN):
 
 class ButtonActionPermissionData(TypedDict):
     type: int
-    role_ids: List[int]
-    user_ids: List[int]
+    role_ids: list[int]
+    user_ids: list[int]
 
 
 class ButtonActionData(TypedDict):
@@ -511,11 +507,11 @@ class ButtonBaseData(TypedDict):
 
 
 class ButtonRowData(TypedDict):
-    buttons: List[ButtonBaseData]
+    buttons: list[ButtonBaseData]
 
 
 class ButtonData(TypedDict):
-    rows: List[ButtonRowData]
+    rows: list[ButtonRowData]
     bot_appid: int
 
 
@@ -530,7 +526,7 @@ TYPE_MAPPING = {cls.__element_type__: cls for cls in MessageSegment.__subclasses
 class Message(BaseMessage[MessageSegment]):
     @classmethod
     @override
-    def get_segment_class(cls) -> Type[MessageSegment]:
+    def get_segment_class(cls) -> type[MessageSegment]:
         # 返回适配器的 MessageSegment 类型本身
         return MessageSegment
 
@@ -540,15 +536,13 @@ class Message(BaseMessage[MessageSegment]):
         yield MessageSegment.text(msg)
 
     @classmethod
-    def from_elements(
-        cls, elements: List[Element]
-    ) -> "Message":
+    def from_elements(cls, elements: list[Element]) -> "Message":
         msg = Message()
         for element in elements:
             msg.append(TYPE_MAPPING[element.type].parse(element))
         return msg
 
-    def to_elements(self) -> List[Element]:
+    def to_elements(self) -> list[Element]:
         res = []
         for seg in self:
             res.append(seg.dump())

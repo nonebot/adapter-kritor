@@ -1,39 +1,34 @@
 import re
-import json
 from typing_extensions import override
-from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional
+from typing import TYPE_CHECKING, Union, Optional
 
+from betterproto import Casing
+from grpclib.client import Channel
 from nonebot.message import handle_event
-from nonebot.drivers import Request, Response
+from nonebot.adapters import Bot as BaseBot
 from nonebot.compat import type_validate_python
 
-from nonebot.adapters import Bot as BaseBot
-
+from .model import Contact
 from .utils import API, log
 from .config import ClientInfo
+from .message import Reply, Message, MessageSegment
 from .event import Event, MessageEvent, MessageEventType
-from .message import Message, MessageSegment, Reply
-from .model import Contact
-
-from grpclib.client import Channel
-from betterproto import Casing
-
-from .protos.kritor.common import Element
+from .protos.kritor.common import Element, ForwardMessageBody
 from .protos.kritor.message import (
-    MessageServiceStub, 
-    SendMessageRequest, 
-    SendMessageResponse,
-    SendMessageByResIdRequest,
     GetMessageRequest,
+    MessageServiceStub,
+    SendMessageRequest,
+    SendMessageResponse,
     RecallMessageRequest,
-    ReactMessageWithEmojiRequest,
     SetMessageReadRequest,
     GetMessageBySeqRequest,
     GetHistoryMessageRequest,
     SetEssenceMessageRequest,
+    SendMessageByResIdRequest,
     DeleteEssenceMessageRequest,
     UploadForwardMessageRequest,
     GetEssenceMessageListRequest,
+    ReactMessageWithEmojiRequest,
     DownloadForwardMessageRequest,
     GetHistoryMessageBySeqRequest,
 )
@@ -89,7 +84,9 @@ def _check_at_me(
     event: MessageEvent,
 ):
     def _is_at_me_seg(segment: MessageSegment) -> bool:
-        return segment.type == "at" and (segment.get("uid") == bot.info.account or segment.data["uid"] == bot.info.account)
+        return segment.type == "at" and (
+            segment.get("uid") == bot.info.account or segment.data["uid"] == bot.info.account
+        )
 
     message = event.get_message()
 
@@ -218,7 +215,7 @@ class Bot(BaseBot):
         self,
         *,
         contact: Contact,
-        elements: List[Element],
+        elements: list[Element],
     ) -> SendMessageResponse:
         """发送消息
 
@@ -244,7 +241,6 @@ class Bot(BaseBot):
         """
         message = MessageServiceStub(self.client)
         return await message.send_message_by_res_id(SendMessageByResIdRequest(res_id=res_id, contact=contact.dump()))
-    
 
     @API
     async def get_message(
@@ -259,7 +255,7 @@ class Bot(BaseBot):
         """
         message = MessageServiceStub(self.client)
         return await message.get_message(GetMessageRequest(message_id=message_id))
-    
+
     @API
     async def get_message_by_seq(
         self,
@@ -290,7 +286,9 @@ class Bot(BaseBot):
             count: 获取数量
         """
         message = MessageServiceStub(self.client)
-        return await message.get_history_message(GetHistoryMessageRequest(contact=contact.dump(), start_message_id=start_message_id, count=count))
+        return await message.get_history_message(
+            GetHistoryMessageRequest(contact=contact.dump(), start_message_id=start_message_id, count=count)
+        )
 
     @API
     async def recall_message(
@@ -305,7 +303,7 @@ class Bot(BaseBot):
         """
         message = MessageServiceStub(self.client)
         return await message.recall_message(RecallMessageRequest(message_id=message_id))
-    
+
     @API
     async def set_message_comment_emoji(
         self,
@@ -324,8 +322,11 @@ class Bot(BaseBot):
             is_comment: 是否评论, False为撤销评论
         """
         message = MessageServiceStub(self.client)
-        return await message.react_message_with_emoji(ReactMessageWithEmojiRequest(contact=contact.dump(), message_id=message_id, face_id=emoji, is_comment=is_comment))
-    
+        return await message.react_message_with_emoji(
+            ReactMessageWithEmojiRequest(
+                contact=contact.dump(), message_id=message_id, face_id=emoji, is_comment=is_comment
+            )
+        )
 
     @API
     async def get_forward_message(
@@ -340,7 +341,7 @@ class Bot(BaseBot):
         """
         message = MessageServiceStub(self.client)
         return await message.download_forward_message(DownloadForwardMessageRequest(res_id=res_id))
-    
+
     @API
     async def delete_essence_message(
         self,
@@ -355,8 +356,10 @@ class Bot(BaseBot):
             message_id: 消息ID
         """
         message = MessageServiceStub(self.client)
-        return await message.delete_essence_message(DeleteEssenceMessageRequest(group_id=group_id, message_id=message_id))
-    
+        return await message.delete_essence_message(
+            DeleteEssenceMessageRequest(group_id=group_id, message_id=message_id)
+        )
+
     @API
     async def get_esence_message_list(
         self,
@@ -370,7 +373,7 @@ class Bot(BaseBot):
         """
         message = MessageServiceStub(self.client)
         return (await message.get_essence_message_list(GetEssenceMessageListRequest(group_id=group_id))).messages
-    
+
     @API
     async def set_essence_message(
         self,
@@ -386,3 +389,55 @@ class Bot(BaseBot):
         """
         message = MessageServiceStub(self.client)
         return await message.set_essence_message(SetEssenceMessageRequest(group_id=group_id, message_id=message_id))
+
+    @API
+    async def upload_forward_message(
+        self,
+        *,
+        contact: Contact,
+        messages: list[ForwardMessageBody],
+    ):
+        """上传转发消息
+
+        参数:
+            contact: 要发送的目标
+            messages: 要发送的合并转发消息
+        """
+        message = MessageServiceStub(self.client)
+        return await message.upload_forward_message(
+            UploadForwardMessageRequest(contact=contact.dump(), messages=messages)
+        )
+
+    @API
+    async def set_message_readed(
+        self,
+        *,
+        contact: Contact,
+    ):
+        """设置消息已读
+
+        参数:
+            contact: 要发送的目标
+        """
+        message = MessageServiceStub(self.client)
+        return await message.set_message_readed(SetMessageReadRequest(contact=contact.dump()))
+
+    @API
+    async def get_history_message_by_seq(
+        self,
+        *,
+        contact: Contact,
+        start_message_seq: int,
+        count: int = 10,
+    ):
+        """获取历史消息
+
+        参数:
+            contact: 要获取的目标
+            start_message_seq: 起始消息序号, 为空则从最新消息开始
+            count: 获取数量
+        """
+        message = MessageServiceStub(self.client)
+        return await message.get_history_message_by_seq(
+            GetHistoryMessageBySeqRequest(contact=contact.dump(), start_message_seq=start_message_seq, count=count)
+        )

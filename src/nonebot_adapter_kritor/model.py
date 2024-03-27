@@ -1,9 +1,12 @@
 from enum import IntEnum
-from typing import Optional, Literal, Union
+from typing import Union, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field, BaseModel
 
-from .protos.kritor.common import Scene, Contact as ProtoContact, Sender as ProtoSender
+from .protos.kritor.common import Scene
+from .protos.kritor.common import Sender as ProtoSender
+from .protos.kritor.common import Contact as ProtoContact
+
 
 class SceneType(IntEnum):
     GROUP = 0
@@ -28,28 +31,36 @@ class Contact(BaseModel):
             sub_peer=self.sub_id,
         )
 
+
 class Group(Contact):
     type: Literal[SceneType.GROUP] = SceneType.GROUP
+
 
 class Friend(Contact):
     type: Literal[SceneType.FRIEND] = SceneType.FRIEND
 
+
 class Guild(Contact):
     type: Literal[SceneType.GUILD] = SceneType.GUILD
+
 
 class Stranger(Contact):
     type: Literal[SceneType.STRANGER] = SceneType.STRANGER
 
+
 class StrangerFromGroup(Contact):
     type: Literal[SceneType.STRANGER_FROM_GROUP] = SceneType.STRANGER_FROM_GROUP
 
+
 class Nearby(Contact):
     type: Literal[SceneType.NEARBY] = SceneType.NEARBY
+
 
 ContactType = Union[
     Union[Group, Friend, Guild, Stranger, StrangerFromGroup, Nearby],
     Contact,
 ]
+
 
 class Sender(BaseModel):
     uid: str
@@ -61,4 +72,4 @@ class Sender(BaseModel):
             uid=self.uid,
             uin=self.uin,
             nick=self.nick,
-       )
+        )
