@@ -154,6 +154,9 @@ class ImageElement(betterproto.Message):
     file_name: str = betterproto.string_field(2, group="data")
     file_path: str = betterproto.string_field(3, group="data")
     file_url: str = betterproto.string_field(4, group="data")
+    file_md5: Optional[str] = betterproto.string_field(
+        5, optional=True, group="_file_md5"
+    )
     sub_type: Optional[int] = betterproto.uint32_field(
         6, optional=True, group="_sub_type"
     )
@@ -168,7 +171,10 @@ class VoiceElement(betterproto.Message):
     file_name: str = betterproto.string_field(2, group="data")
     file_path: str = betterproto.string_field(3, group="data")
     file_url: str = betterproto.string_field(4, group="data")
-    magic: Optional[bool] = betterproto.bool_field(5, optional=True, group="_magic")
+    file_md5: Optional[str] = betterproto.string_field(
+        5, optional=True, group="_file_md5"
+    )
+    magic: Optional[bool] = betterproto.bool_field(6, optional=True, group="_magic")
 
 
 @dataclass(eq=False, repr=False)
@@ -177,6 +183,9 @@ class VideoElement(betterproto.Message):
     file_name: str = betterproto.string_field(2, group="data")
     file_path: str = betterproto.string_field(3, group="data")
     file_url: str = betterproto.string_field(4, group="data")
+    file_md5: Optional[str] = betterproto.string_field(
+        5, optional=True, group="_file_md5"
+    )
 
 
 @dataclass(eq=False, repr=False)

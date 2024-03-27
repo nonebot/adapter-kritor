@@ -16,10 +16,10 @@ from .config import Config, ClientInfo
 from .exception import ApiNotAvailable
 
 from grpclib.client import Channel
-from betterproto import which_one_of
+from betterproto import which_one_of, Casing
 from .protos.kritor.authentication import AuthenticateRequest, AuthenticationServiceStub, AuthenticateResponseAuthenticateResponseCode
 from .protos.kritor.event import EventServiceStub, RequestPushEvent, EventType
-
+from .event import MessageEventType
 class Adapter(BaseAdapter):
     bots: Dict[str, Bot]
 
@@ -58,22 +58,24 @@ class Adapter(BaseAdapter):
         )
 
 
-    async def _listen_message(self, info: ClientInfo, service: EventServiceStub):
-        async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_message)):
+    async def _listen_message(self, bot: Bot, service: EventServiceStub):
+        async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_MESSAGE)):
             log("DEBUG", f"Received message event: {event.message}")
             message = event.message
+            event = type_validate_python(MessageEventType, message.to_pydict(casing=Casing.SNAKE))  # type: ignore
+            asyncio.create_task(bot.handle_event(event))
 
-    async def _listen_notice(self, info: ClientInfo, service: EventServiceStub):
+    async def _listen_notice(self, bot: Bot, service: EventServiceStub):
         async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_NOTICE)):
             notice = which_one_of(event.notice, "notice")
             log("DEBUG", f"Received notice event {notice[0]}: {notice[1]}")
 
-    async def _listen_request(self, info: ClientInfo, service: EventServiceStub):
+    async def _listen_request(self, bot: Bot, service: EventServiceStub):
         async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_REQUEST)):
             request = which_one_of(event.request, "request")
             log("DEBUG", f"Received request event {request[0]}: {request[1]}")
 
-    async def _listen_core(self, info: ClientInfo, service: EventServiceStub):
+    async def _listen_core(self, bot: Bot, service: EventServiceStub):
         async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_CORE_EVENT)):
             log("DEBUG", f"Received event: {event}")
 
@@ -99,10 +101,10 @@ class Adapter(BaseAdapter):
             self.bot_connect(bot)
             event = EventServiceStub(channel)
             listens = [
-                asyncio.create_task(self._listen_message(info, event)),
-                asyncio.create_task(self._listen_notice(info, event)),
-                asyncio.create_task(self._listen_request(info, event)),
-                asyncio.create_task(self._listen_core(info, event))
+                asyncio.create_task(self._listen_message(bot, event)),
+                asyncio.create_task(self._listen_notice(bot, event)),
+                asyncio.create_task(self._listen_request(bot, event)),
+                asyncio.create_task(self._listen_core(bot, event))
             ]
             await asyncio.wait(listens, return_when=asyncio.FIRST_EXCEPTION)
         for task in listens:
@@ -110,15 +112,15 @@ class Adapter(BaseAdapter):
             await task
         self.bot_disconnect(bot)
 
-    @staticmethod
-    def payload_to_event(payload: SatoriEvent) -> Event:
-        EventClass = EVENT_CLASSES.get(payload.type, None)
-        if EventClass is None:
-            log("WARNING", f"Unknown payload type: {payload.type}")
-            event = type_validate_python(Event, model_dump(payload))
-            event.__type__ = payload.type  # type: ignore
-            return event
-        return type_validate_python(EventClass, model_dump(payload))
+    # @staticmethod
+    # def payload_to_event(payload: SatoriEvent) -> Event:
+    #     EventClass = EVENT_CLASSES.get(payload.type, None)
+    #     if EventClass is None:
+    #         log("WARNING", f"Unknown payload type: {payload.type}")
+    #         event = type_validate_python(Event, model_dump(payload))
+    #         event.__type__ = payload.type  # type: ignore
+    #         return event
+    #     return type_validate_python(EventClass, model_dump(payload))
 
     @override
     async def _call_api(self, bot: Bot, api: str, **data: Any) -> Any:

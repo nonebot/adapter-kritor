@@ -21,13 +21,15 @@ from .exception import (
     MethodNotAllowedException,
     ApiNotImplementedException,
 )
+from .event import Event, MessageEvent
+from .message import Message, MessageSegment, Reply, At
 from grpclib.client import Channel
 
 if TYPE_CHECKING:
     from .adapter import Adapter
 
 
-def _check_reply(
+async def _check_reply(
     bot: "Bot",
     event: MessageEvent,
 ) -> None:
@@ -39,28 +41,23 @@ def _check_reply(
     """
     message = event.get_message()
     try:
-        index = message.index("quote")
+        index = message.index("reply")
     except ValueError:
         return
 
     msg_seg = message[index]
     if TYPE_CHECKING:
-        assert isinstance(msg_seg, RenderMessage)
-    event.reply = msg_seg  # type: ignore
-    if "content" not in msg_seg.data:
-        return
-    author_msg = msg_seg.data["content"].get("author")
-    if author_msg:
-        author_seg = author_msg[0]
-        if TYPE_CHECKING:
-            assert isinstance(author_seg, Author)
-        event.to_me = author_seg.data.get("id") == bot.self_id
-
+        assert isinstance(msg_seg, Reply)
     del message[index]
+    event.reply = msg_seg  # type: ignore
+    replied_message: MessageEvent = ...  # TODO: get_msg_from_id
+    if not replied_message:
+        return
+    event.to_me = replied_message.get_user_id() == bot.info.account
     if (
         len(message) > index
         and message[index].type == "at"
-        and message[index].data.get("id") == str(bot.self_info.id)
+        and (message[index].get("uid") == bot.info.account or message[index].data["uid"] == bot.info.account)
     ):
         del message[index]
     if len(message) > index and message[index].type == "text":
@@ -76,7 +73,7 @@ def _check_at_me(
     event: MessageEvent,
 ):
     def _is_at_me_seg(segment: MessageSegment) -> bool:
-        return segment.type == "at" and segment.data.get("id") == str(bot.self_info.id)
+        return segment.type == "at" and (segment.get("uid") == bot.info.account or segment.data["uid"] == bot.info.account)
 
     message = event.get_message()
 
@@ -151,7 +148,7 @@ class Bot(BaseBot):
 
     async def handle_event(self, event: Event) -> None:
         if isinstance(event, MessageEvent):
-            _check_reply(self, event)
+            await _check_reply(self, event)
             _check_at_me(self, event)
             _check_nickname(self, event)
         await handle_event(self, event)

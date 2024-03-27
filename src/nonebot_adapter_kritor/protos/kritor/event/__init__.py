@@ -70,7 +70,7 @@ class RequestsEventRequestType(betterproto.Enum):
 
 class EventType(betterproto.Enum):
     EVENT_TYPE_CORE_EVENT = 0
-    EVENT_TYPE_message = 1
+    EVENT_TYPE_MESSAGE = 1
     EVENT_TYPE_NOTICE = 2
     EVENT_TYPE_REQUEST = 3
 
@@ -271,7 +271,7 @@ class NoticeEvent(betterproto.Message):
     group_member_ban: "GroupMemberBanNotice" = betterproto.message_field(
         28, group="notice"
     )
-    group_sign: "GroupSignInNotice" = betterproto.message_field(29, group="notice")
+    group_sign_in: "GroupSignInNotice" = betterproto.message_field(29, group="notice")
     group_whole_ban: "GroupWholeBanNotice" = betterproto.message_field(
         30, group="notice"
     )
