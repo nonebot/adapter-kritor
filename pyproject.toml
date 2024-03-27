@@ -65,4 +65,4 @@ includes = ["src/nonebot_adapter_kritor"]
 
 [tool.pdm.scripts]
 format = { composite = ["isort ./src/nonebot_adapter_kritor/ ./tests/","black ./src/nonebot_adapter_kritor/ ./tests/","ruff check ./src/nonebot_adapter_kritor/ ./tests/"] }
-compile = "grpc_tools.protoc -I ./src/kritor/protos --python_betterproto_out=./src/nonebot_adapter_kritor/protos ./common/*.proto ./core/core.proto ./customization/customization.proto ./developer/*.proto ./event/*.proto ./file/*.proto ./friend/*.proto ./group/*.proto ./guild/*.proto ./message/message.proto ./reverse/reverse.proto ./web/web.proto"
+compile = "python -m grpc_tools.protoc -I ./src/kritor/protos --python_betterproto_out=./src/nonebot_adapter_kritor/protos ./src/kritor/protos/common/*.proto ./src/kritor/protos/core/core.proto ./src/kritor/protos/customization/customization.proto ./src/kritor/protos/developer/*.proto ./src/kritor/protos/event/*.proto ./src/kritor/protos/file/*.proto ./src/kritor/protos/friend/*.proto ./src/kritor/protos/group/*.proto ./src/kritor/protos/guild/*.proto ./src/kritor/protos/message/message.proto ./src/kritor/protos/reverse/reverse.proto ./src/kritor/protos/web/web.proto"
