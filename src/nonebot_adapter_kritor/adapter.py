@@ -127,16 +127,6 @@ class Adapter(BaseAdapter):
             await task
         self.bot_disconnect(bot)
 
-    # @staticmethod
-    # def payload_to_event(payload: SatoriEvent) -> Event:
-    #     EventClass = EVENT_CLASSES.get(payload.type, None)
-    #     if EventClass is None:
-    #         log("WARNING", f"Unknown payload type: {payload.type}")
-    #         event = type_validate_python(Event, model_dump(payload))
-    #         event.__type__ = payload.type  # type: ignore
-    #         return event
-    #     return type_validate_python(EventClass, model_dump(payload))
-
     @override
     async def _call_api(self, bot: Bot, api: str, **data: Any) -> Any:
         log("DEBUG", f"Bot {bot.self_id} calling API <y>{api}</y>")

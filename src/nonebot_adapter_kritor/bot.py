@@ -11,19 +11,32 @@ from nonebot.adapters import Bot as BaseBot
 
 from .utils import API, log
 from .config import ClientInfo
-from .exception import (
-    ActionFailed,
-    NetworkError,
-    NotFoundException,
-    ForbiddenException,
-    BadRequestException,
-    UnauthorizedException,
-    MethodNotAllowedException,
-    ApiNotImplementedException,
-)
-from .event import Event, MessageEvent
-from .message import Message, MessageSegment, Reply, At
+from .event import Event, MessageEvent, MessageEventType
+from .message import Message, MessageSegment, Reply
+from .model import Contact
+
 from grpclib.client import Channel
+from betterproto import Casing
+
+from .protos.kritor.common import Element
+from .protos.kritor.message import (
+    MessageServiceStub, 
+    SendMessageRequest, 
+    SendMessageResponse,
+    SendMessageByResIdRequest,
+    GetMessageRequest,
+    RecallMessageRequest,
+    ReactMessageWithEmojiRequest,
+    SetMessageReadRequest,
+    GetMessageBySeqRequest,
+    GetHistoryMessageRequest,
+    SetEssenceMessageRequest,
+    DeleteEssenceMessageRequest,
+    UploadForwardMessageRequest,
+    GetEssenceMessageListRequest,
+    DownloadForwardMessageRequest,
+    GetHistoryMessageBySeqRequest,
+)
 
 if TYPE_CHECKING:
     from .adapter import Adapter
@@ -50,9 +63,12 @@ async def _check_reply(
         assert isinstance(msg_seg, Reply)
     del message[index]
     event.reply = msg_seg  # type: ignore
-    replied_message: MessageEvent = ...  # TODO: get_msg_from_id
-    if not replied_message:
+    try:
+        origin = (await bot.get_message(message_id=msg_seg.data["message_id"])).message
+    except Exception:
         return
+    replied_message: MessageEvent = type_validate_python(MessageEventType, origin.to_pydict(casing=Casing.SNAKE))  # type: ignore
+    event._replied_message = replied_message
     event.to_me = replied_message.get_user_id() == bot.info.account
     if (
         len(message) > index
@@ -187,446 +203,186 @@ class Bot(BaseBot):
         event: Event,
         message: Union[str, Message, MessageSegment],
         **kwargs,
-    ) -> List[SatoriMessage]:
-        if not event.channel:
+    ) -> SendMessageResponse:
+        if not isinstance(event, MessageEvent):
             raise RuntimeError("Event cannot be replied to!")
-        return await self.send_message(event.channel.id, message)
+        if isinstance(message, str):
+            message = Message(message)
+        elif isinstance(message, MessageSegment):
+            message = Message([message])
+        elements = message.to_elements()
+        return await self.send_message(contact=event.contact, elements=elements)
 
+    @API
     async def send_message(
         self,
-        channel_id: str,
-        message: Union[str, Message, MessageSegment],
-    ) -> List[SatoriMessage]:
+        *,
+        contact: Contact,
+        elements: List[Element],
+    ) -> SendMessageResponse:
         """发送消息
 
         参数:
-            channel_id: 要发送的频道 ID
+            contact: 要发送的目标
             message: 要发送的消息
         """
-        return await self.message_create(channel_id=channel_id, content=str(message))
+        message = MessageServiceStub(self.client)
+        return await message.send_message(SendMessageRequest(contact=contact.dump(), elements=elements))
 
-    async def send_private_message(
+    @API
+    async def send_message_by_res_id(
         self,
-        user_id: str,
-        message: Union[str, Message, MessageSegment],
-    ) -> List[SatoriMessage]:
-        """发送私聊消息
-
-        参数:
-            user_id: 要发送的用户 ID
-            message: 要发送的消息
-        """
-        channel = await self.user_channel_create(user_id=user_id)
-        return await self.message_create(channel_id=channel.id, content=str(message))
-
-    async def update_message(
-        self,
-        channel_id: str,
-        message_id: str,
-        message: Union[str, Message, MessageSegment],
+        *,
+        res_id: str,
+        contact: Contact,
     ):
-        """更新消息
+        """通过资源ID发送消息（发送转发消息）
 
         参数:
-            channel_id: 要更新的频道 ID
-            message_id: 要更新的消息 ID
-            message: 要更新的消息
+            res_id: 资源ID
+            contact: 要发送的目标
         """
-        await self.message_update(channel_id=channel_id, message_id=message_id, content=str(message))
+        message = MessageServiceStub(self.client)
+        return await message.send_message_by_res_id(SendMessageByResIdRequest(res_id=res_id, contact=contact.dump()))
+    
 
     @API
-    async def message_create(
+    async def get_message(
         self,
         *,
-        channel_id: str,
-        content: str,
-    ) -> List[SatoriMessage]:
-        request = Request(
-            "POST",
-            self.info.api_base / "message.create",
-            json={"channel_id": channel_id, "content": content},
-        )
-        res = await self._request(request)
-        return [type_validate_python(SatoriMessage, i) for i in res]
-
-    @API
-    async def message_get(self, *, channel_id: str, message_id: str) -> SatoriMessage:
-        request = Request(
-            "POST",
-            self.info.api_base / "message.get",
-            json={"channel_id": channel_id, "message_id": message_id},
-        )
-        res = await self._request(request)
-        return type_validate_python(SatoriMessage, res)
-
-    @API
-    async def message_delete(self, *, channel_id: str, message_id: str) -> None:
-        request = Request(
-            "POST",
-            self.info.api_base / "message.delete",
-            json={"channel_id": channel_id, "message_id": message_id},
-        )
-        await self._request(request)
-
-    @API
-    async def message_update(
-        self,
-        *,
-        channel_id: str,
         message_id: str,
-        content: str,
-    ) -> None:
-        request = Request(
-            "POST",
-            self.info.api_base / "message.update",
-            json={
-                "channel_id": channel_id,
-                "message_id": message_id,
-                "content": content,
-            },
-        )
-        await self._request(request)
+    ):
+        """获取消息
 
+        参数:
+            message_id: 消息ID
+        """
+        message = MessageServiceStub(self.client)
+        return await message.get_message(GetMessageRequest(message_id=message_id))
+    
     @API
-    async def message_list(
-        self, *, channel_id: str, next_token: Optional[str] = None
-    ) -> PageResult[SatoriMessage]:
-        request = Request(
-            "POST",
-            self.info.api_base / "message.list",
-            json={"channel_id": channel_id, "next": next_token},
-        )
-        return type_validate_python(PageResult[SatoriMessage], await self._request(request))
-
-    @API
-    async def channel_get(self, *, channel_id: str) -> Channel:
-        request = Request(
-            "POST",
-            self.info.api_base / "channel.get",
-            json={"channel_id": channel_id},
-        )
-        res = await self._request(request)
-        return type_validate_python(Channel, res)
-
-    @API
-    async def channel_list(self, *, guild_id: str, next_token: Optional[str] = None) -> PageResult[Channel]:
-        request = Request(
-            "POST",
-            self.info.api_base / "channel.list",
-            json={"guild_id": guild_id, "next": next_token},
-        )
-        return type_validate_python(PageResult[Channel], await self._request(request))
-
-    @API
-    async def channel_create(self, *, guild_id: str, data: Channel) -> Channel:
-        request = Request(
-            "POST",
-            self.info.api_base / "channel.create",
-            json={"guild_id": guild_id, "data": data.dict()},
-        )
-        return type_validate_python(Channel, await self._request(request))
-
-    @API
-    async def channel_update(
+    async def get_message_by_seq(
         self,
         *,
-        channel_id: str,
-        data: Channel,
-    ) -> None:
-        request = Request(
-            "POST",
-            self.info.api_base / "channel.update",
-            json={"channel_id": channel_id, "data": data.dict()},
-        )
-        await self._request(request)
+        message_seq: int,
+    ):
+        """获取消息
+
+        参数:
+            message_seq: 消息序号
+        """
+        message = MessageServiceStub(self.client)
+        return await message.get_message_by_seq(GetMessageBySeqRequest(message_seq=message_seq))
 
     @API
-    async def channel_delete(self, *, channel_id: str) -> None:
-        request = Request(
-            "POST",
-            self.info.api_base / "channel.delete",
-            json={"channel_id": channel_id},
-        )
-        await self._request(request)
-
-    @API
-    async def channel_mute(self, *, channel_id: str, duration: float = 0) -> None:
-        request = Request(
-            "POST",
-            self.info.api_base / "channel.mute",
-            json={"channel_id": channel_id, "duration": duration},
-        )
-        await self._request(request)
-
-    @API
-    async def user_channel_create(self, *, user_id: str, guild_id: Optional[str] = None) -> Channel:
-        data = {"user_id": user_id}
-        if guild_id is not None:
-            data["guild_id"] = guild_id
-        request = Request(
-            "POST",
-            self.info.api_base / "user.channel.create",
-            json=data,
-        )
-        return type_validate_python(Channel, await self._request(request))
-
-    @API
-    async def guild_get(self, *, guild_id: str) -> Guild:
-        request = Request(
-            "POST",
-            self.info.api_base / "guild.get",
-            json={"guild_id": guild_id},
-        )
-        return type_validate_python(Guild, await self._request(request))
-
-    @API
-    async def guild_list(self, *, next_token: Optional[str] = None) -> PageResult[Guild]:
-        request = Request(
-            "POST",
-            self.info.api_base / "guild.list",
-            json={"next": next_token},
-        )
-        return type_validate_python(PageResult[Guild], await self._request(request))
-
-    @API
-    async def guild_approve(self, *, request_id: str, approve: bool, comment: str) -> None:
-        request = Request(
-            "POST",
-            self.info.api_base / "guild.approve",
-            json={"message_id": request_id, "approve": approve, "comment": comment},
-        )
-        await self._request(request)
-
-    @API
-    async def guild_member_list(
-        self, *, guild_id: str, next_token: Optional[str] = None
-    ) -> PageResult[OuterMember]:
-        request = Request(
-            "POST",
-            self.info.api_base / "guild.member.list",
-            json={"guild_id": guild_id, "next": next_token},
-        )
-        return type_validate_python(PageResult[OuterMember], await self._request(request))
-
-    @API
-    async def guild_member_get(self, *, guild_id: str, user_id: str) -> OuterMember:
-        request = Request(
-            "POST",
-            self.info.api_base / "guild.member.get",
-            json={"guild_id": guild_id, "user_id": user_id},
-        )
-        return type_validate_python(OuterMember, await self._request(request))
-
-    @API
-    async def guild_member_kick(self, *, guild_id: str, user_id: str, permanent: bool = False) -> None:
-        request = Request(
-            "POST",
-            self.info.api_base / "guild.member.kick",
-            json={"guild_id": guild_id, "user_id": user_id, "permanent": permanent},
-        )
-        await self._request(request)
-
-    @API
-    async def guild_member_mute(self, *, guild_id: str, user_id: str, duration: float = 0) -> None:
-        request = Request(
-            "POST",
-            self.info.api_base / "guild.member.mute",
-            json={"guild_id": guild_id, "user_id": user_id, "duration": duration},
-        )
-        await self._request(request)
-
-    @API
-    async def guild_member_approve(self, *, request_id: str, approve: bool, comment: str) -> None:
-        request = Request(
-            "POST",
-            self.info.api_base / "guild.member.approve",
-            json={"message_id": request_id, "approve": approve, "comment": comment},
-        )
-        await self._request(request)
-
-    @API
-    async def guild_member_role_set(self, *, guild_id: str, user_id: str, role_id: str) -> None:
-        request = Request(
-            "POST",
-            self.info.api_base / "guild.member.role.set",
-            json={"guild_id": guild_id, "user_id": user_id, "role_id": role_id},
-        )
-        await self._request(request)
-
-    @API
-    async def guild_member_role_unset(self, *, guild_id: str, user_id: str, role_id: str) -> None:
-        request = Request(
-            "POST",
-            self.info.api_base / "guild.member.role.unset",
-            json={"guild_id": guild_id, "user_id": user_id, "role_id": role_id},
-        )
-        await self._request(request)
-
-    @API
-    async def guild_role_list(self, guild_id: str, next_token: Optional[str] = None) -> PageResult[Role]:
-        request = Request(
-            "POST",
-            self.info.api_base / "guild.role.list",
-            json={"guild_id": guild_id, "next": next_token},
-        )
-        return type_validate_python(PageResult[Role], await self._request(request))
-
-    @API
-    async def guild_role_create(
+    async def get_history_message(
         self,
         *,
-        guild_id: str,
-        role: Role,
-    ) -> Role:
-        request = Request(
-            "POST",
-            self.info.api_base / "guild.role.create",
-            json={"guild_id": guild_id, "role": role.dict()},
-        )
-        return type_validate_python(Role, await self._request(request))
+        contact: Contact,
+        start_message_id: Optional[str] = None,
+        count: int = 10,
+    ):
+        """获取历史消息
+
+        参数:
+            contact: 要获取的目标
+            start_message_id: 起始消息ID, 为空则从最新消息开始
+            count: 获取数量
+        """
+        message = MessageServiceStub(self.client)
+        return await message.get_history_message(GetHistoryMessageRequest(contact=contact.dump(), start_message_id=start_message_id, count=count))
 
     @API
-    async def guild_role_update(
+    async def recall_message(
         self,
         *,
-        guild_id: str,
-        role_id: str,
-        role: Role,
-    ) -> None:
-        request = Request(
-            "POST",
-            self.info.api_base / "guild.role.update",
-            json={"guild_id": guild_id, "role_id": role_id, "role": role.dict()},
-        )
-        await self._request(request)
-
-    @API
-    async def guild_role_delete(self, *, guild_id: str, role_id: str) -> None:
-        request = Request(
-            "POST",
-            self.info.api_base / "guild.role.delete",
-            json={"guild_id": guild_id, "role_id": role_id},
-        )
-        await self._request(request)
-
-    @API
-    async def reaction_create(
-        self,
-        *,
-        channel_id: str,
         message_id: str,
-        emoji: str,
-    ) -> None:
-        request = Request(
-            "POST",
-            self.info.api_base / "reaction.create",
-            json={"channel_id": channel_id, "message_id": message_id, "emoji": emoji},
-        )
-        await self._request(request)
+    ):
+        """撤回消息
 
+        参数:
+            message_id: 消息ID
+        """
+        message = MessageServiceStub(self.client)
+        return await message.recall_message(RecallMessageRequest(message_id=message_id))
+    
     @API
-    async def reaction_delete(
+    async def set_message_comment_emoji(
         self,
         *,
-        channel_id: str,
+        contact: Contact,
         message_id: str,
-        emoji: str,
-        user_id: Optional[str] = None,
-    ) -> None:
-        data = {"channel_id": channel_id, "message_id": message_id, "emoji": emoji}
-        if user_id is not None:
-            data["user_id"] = user_id
-        request = Request(
-            "POST",
-            self.info.api_base / "reaction.delete",
-            json=data,
-        )
-        await self._request(request)
+        emoji: int,
+        is_comment: bool = True,
+    ):
+        """给消息评论表情
+
+        参数:
+            contact: 要发送的目标
+            message_id: 消息ID
+            emoji: 表情
+            is_comment: 是否评论, False为撤销评论
+        """
+        message = MessageServiceStub(self.client)
+        return await message.react_message_with_emoji(ReactMessageWithEmojiRequest(contact=contact.dump(), message_id=message_id, face_id=emoji, is_comment=is_comment))
+    
 
     @API
-    async def reaction_clear(
+    async def get_forward_message(
         self,
         *,
-        channel_id: str,
+        res_id: str,
+    ):
+        """获取转发消息
+
+        参数:
+            res_d: 合并转发元素内的资源ID
+        """
+        message = MessageServiceStub(self.client)
+        return await message.download_forward_message(DownloadForwardMessageRequest(res_id=res_id))
+    
+    @API
+    async def delete_essence_message(
+        self,
+        *,
+        group_id: int,
         message_id: str,
-        emoji: Optional[str] = None,
-    ) -> None:
-        data = {"channel_id": channel_id, "message_id": message_id}
-        if emoji is not None:
-            data["emoji"] = emoji
-        request = Request(
-            "POST",
-            self.info.api_base / "reaction.clear",
-            json=data,
-        )
-        await self._request(request)
+    ):
+        """删除精华消息
 
+        参数:
+            group_id: 群ID
+            message_id: 消息ID
+        """
+        message = MessageServiceStub(self.client)
+        return await message.delete_essence_message(DeleteEssenceMessageRequest(group_id=group_id, message_id=message_id))
+    
     @API
-    async def reaction_list(
+    async def get_esence_message_list(
         self,
         *,
-        channel_id: str,
+        group_id: int,
+    ):
+        """获取精华消息列表
+
+        参数:
+            group_id: 群ID
+        """
+        message = MessageServiceStub(self.client)
+        return (await message.get_essence_message_list(GetEssenceMessageListRequest(group_id=group_id))).messages
+    
+    @API
+    async def set_essence_message(
+        self,
+        *,
+        group_id: int,
         message_id: str,
-        emoji: str,
-        next_token: Optional[str] = None,
-    ) -> PageResult[User]:
-        request = Request(
-            "POST",
-            self.info.api_base / "reaction.list",
-            json={
-                "channel_id": channel_id,
-                "message_id": message_id,
-                "emoji": emoji,
-                "next": next_token,
-            },
-        )
-        return type_validate_python(PageResult[User], await self._request(request))
+    ):
+        """设置精华消息
 
-    @API
-    async def login_get(self) -> Login:
-        request = Request(
-            "POST",
-            self.info.api_base / "login.get",
-        )
-        return type_validate_python(Login, await self._request(request))
-
-    @API
-    async def user_get(self, *, user_id: str) -> User:
-        request = Request(
-            "POST",
-            self.info.api_base / "user.get",
-            json={"user_id": user_id},
-        )
-        return type_validate_python(User, await self._request(request))
-
-    @API
-    async def friend_list(self, *, next_token: Optional[str] = None) -> PageResult[User]:
-        request = Request(
-            "POST",
-            self.info.api_base / "friend.list",
-            json={"next": next_token},
-        )
-        return type_validate_python(PageResult[User], await self._request(request))
-
-    @API
-    async def friend_approve(self, *, request_id: str, approve: bool, comment: str) -> None:
-        request = Request(
-            "POST",
-            self.info.api_base / "friend.approve",
-            json={"message_id": request_id, "approve": approve, "comment": comment},
-        )
-        await self._request(request)
-
-    @API
-    async def internal(
-        self,
-        *,
-        action: str,
-        **kwargs,
-    ) -> Any:
-        request = Request(
-            "POST",
-            self.info.api_base / "internal" / action,
-            json=kwargs,
-        )
-        return await self._request(request)
+        参数:
+            group_id: 群ID
+            message_id: 消息ID
+        """
+        message = MessageServiceStub(self.client)
+        return await message.set_essence_message(SetEssenceMessageRequest(group_id=group_id, message_id=message_id))

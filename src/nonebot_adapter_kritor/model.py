@@ -3,6 +3,8 @@ from typing import Optional, Literal, Union
 
 from pydantic import BaseModel, Field
 
+from .protos.kritor.common import Scene, Contact as ProtoContact, Sender as ProtoSender
+
 class SceneType(IntEnum):
     GROUP = 0
     FRIEND = 1
@@ -18,6 +20,13 @@ class Contact(BaseModel):
     type: SceneType = Field(..., alias="scene")
     id: str = Field(..., alias="peer")
     sub_id: Optional[str] = Field(None, alias="sub_peer")
+
+    def dump(self) -> ProtoContact:
+        return ProtoContact(
+            scene=Scene(self.type.value),
+            peer=self.id,
+            sub_peer=self.sub_id,
+        )
 
 class Group(Contact):
     type: Literal[SceneType.GROUP] = SceneType.GROUP
@@ -46,3 +55,10 @@ class Sender(BaseModel):
     uid: str
     uin: Optional[int] = None
     nick: Optional[str] = None
+
+    def dump(self) -> ProtoSender:
+        return ProtoSender(
+            uid=self.uid,
+            uin=self.uin,
+            nick=self.nick,
+       )
