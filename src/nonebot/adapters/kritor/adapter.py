@@ -2,6 +2,7 @@ import asyncio
 from typing import Any, Optional
 from typing_extensions import override
 
+from grpclib import GRPCError
 from grpclib.client import Channel
 from nonebot.drivers import Driver
 from betterproto import Casing, which_one_of
@@ -13,8 +14,8 @@ from nonebot.adapters import Adapter as BaseAdapter
 from .bot import Bot
 from .utils import API, log
 from .config import Config, ClientInfo
-from .exception import ApiNotAvailable
 from .event import NoticeEventType, MessageEventType, RequestEventType
+from .exception import STATUS_CODE_TO_EXCEPTION, ActionFailed, ApiNotAvailable
 from .protos.kritor.event import EventType, EventServiceStub, RequestPushEvent
 from .protos.kritor.authentication import (
     AuthenticateRequest,
@@ -142,4 +143,14 @@ class Adapter(BaseAdapter):
         api_handler: Optional[API] = getattr(bot.__class__, api, None)
         if api_handler is None:
             raise ApiNotAvailable(api)
-        return await api_handler(bot, **data)
+        try:
+            return await api_handler(bot, **data)
+        except GRPCError as e:
+            log(
+                "ERROR",
+                f"Bot {bot.self_id} API <y>{api}</y> failed\n"
+                f"Error code: {e.status}\n"
+                f"Error message: {e.message}\n"
+                f"Error details: {e.details}\n",
+            )
+            raise STATUS_CODE_TO_EXCEPTION.get(e.status.value, ActionFailed)(e) from None
