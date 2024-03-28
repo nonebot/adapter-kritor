@@ -321,8 +321,12 @@ class Bot(BaseBot):
             account: 账号
             super_ticket: 超级票据
         """
-        args = {"account_uin": account} if isinstance(account, int) else {"account_uid": account}
-        await self.service.core.switch_account(SwitchAccountRequest(**args, super_ticket=super_ticket))
+        args = (
+            {"account_uin": account, "super_ticket": super_ticket}
+            if isinstance(account, int)
+            else {"account_uid": account, "super_ticket": super_ticket}
+        )
+        await self.service.core.switch_account(SwitchAccountRequest().from_pydict(args))
 
     @API
     async def get_device_battery(self):
@@ -1108,15 +1112,15 @@ class Bot(BaseBot):
         else:
             _group_id = int(group_id)
         if url:
-            args = {"file_url": url}
+            args = {"file_url": url, "group_id": _group_id}
         elif path:
             file = Path(path).resolve().absolute()
-            args = {"file_path": str(file), "file_name": file.name}
+            args = {"file_path": str(file), "file_name": file.name, "group_id": _group_id}
         elif raw:
-            args = {"file": raw if isinstance(raw, bytes) else raw.getvalue()}
+            args = {"file": raw if isinstance(raw, bytes) else raw.getvalue(), "group_id": _group_id}
         else:
             raise ValueError("No file provided")
-        return await self.service.developer.upload_image(UploadImageRequest(group_id=_group_id, **args))
+        return await self.service.developer.upload_image(UploadImageRequest().from_pydict(args))
 
     @API
     async def get_uid_by_uin(
@@ -1157,65 +1161,75 @@ class Bot(BaseBot):
         return (await self.service.friend.get_friend_list(GetFriendListRequest(refresh=refresh))).friends_info
 
     @API
-    async def get_friend_profile_card(self, *, targets: Union[list[str], list[int], Contact, Sender]):
+    async def get_friend_profile_card(self, *, targets: Union[list[Union[str, int]], Contact, Sender]):
         """获取好友名片
 
         参数:
             targets: UIN列表 或 UID列表
         """
+        target_uins = []
+        target_uids = []
         if isinstance(targets, Contact):
             if targets.type != SceneType.FRIEND:
                 raise ValueError("Contact must be FRIEND")
-            args = {"target_uins": [int(targets.id)]}
+            target_uins.append(int(targets.id))
         elif isinstance(targets, Sender):
-            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+            target_uins.append(targets.uin) if targets.uin else target_uids.append(targets.uid)
         else:
-            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
-        return await self.service.friend.get_friend_profile_card(GetFriendProfileCardRequest(**args))
+            target_uins.extend(i for i in targets if isinstance(i, int))
+            target_uids.extend(i for i in targets if isinstance(i, str))
+        return await self.service.friend.get_friend_profile_card(
+            GetFriendProfileCardRequest(target_uids=target_uids, target_uins=target_uins)
+        )
 
     @API
-    async def get_stranger_profile_card(self, *, targets: Union[list[str], list[int], Contact, Sender]):
+    async def get_stranger_profile_card(self, *, targets: Union[list[Union[str, int]], Contact, Sender]):
         """获取陌生人名片
 
         参数:
             targets: UIN列表 或 UID列表
         """
+        target_uins = []
+        target_uids = []
         if isinstance(targets, Contact):
-            if targets.type not in (SceneType.STRANGER, SceneType.STRANGER_FROM_GROUP, SceneType.NEARBY):
-                raise ValueError("Contact must be STRANGER")
-            args = {"target_uins": [int(targets.id)]}
+            if targets.type != SceneType.FRIEND:
+                raise ValueError("Contact must be FRIEND")
+            target_uins.append(int(targets.id))
         elif isinstance(targets, Sender):
-            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+            target_uins.append(targets.uin) if targets.uin else target_uids.append(targets.uid)
         else:
-            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
-        return await self.service.friend.get_stranger_profile_card(GetStrangerProfileCardRequest(**args))
+            target_uins.extend(i for i in targets if isinstance(i, int))
+            target_uids.extend(i for i in targets if isinstance(i, str))
+        return await self.service.friend.get_stranger_profile_card(
+            GetStrangerProfileCardRequest(target_uids=target_uids, target_uins=target_uins)
+        )
 
     @API
     async def is_black_list_user(
         self,
         *,
-        targets: Union[list[str], list[int], Contact, Sender],
+        target: Union[str, int, Contact, Sender],
     ):
         """是否黑名单用户
 
         参数:
-            targets: UIN列表 或 UID列表
+            target: UIN 或 UID
         """
-        if isinstance(targets, Contact):
-            if targets.type not in (
+        if isinstance(target, Contact):
+            if target.type not in (
                 SceneType.FRIEND,
                 SceneType.STRANGER,
                 SceneType.STRANGER_FROM_GROUP,
                 SceneType.NEARBY,
             ):
                 raise ValueError("Contact must be FRIEND")
-            target_uin = int(targets.id)
-            args = {"target_uins": [target_uin]}
-        elif isinstance(targets, Sender):
-            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+            target_uin = int(target.id)
+            args = {"target_uin": target_uin}
+        elif isinstance(target, Sender):
+            args = {"target_uin": target.uin} if target.uin else {"target_uid": target.uid}
         else:
-            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
-        return await self.service.friend.is_black_list_user(IsBlackListUserRequest(**args))
+            args = {"target_uin": target} if isinstance(target, int) else {"target_uid": target}
+        return await self.service.friend.is_black_list_user(IsBlackListUserRequest().from_pydict(args))
 
     @API
     async def set_profile_card(
@@ -1256,30 +1270,37 @@ class Bot(BaseBot):
     async def vote_user(
         self,
         *,
-        targets: Union[list[str], list[int], Contact, Sender],
+        target: Union[str, int, Contact, Sender],
         vote_count: int = 1,
     ):
         """点赞用户
 
         参数:
-            targets: UIN列表 或 UID列表
+            target: UIN 或 UID
             vote_count: 点赞数量
         """
-        if isinstance(targets, Contact):
-            if targets.type not in (
+        if isinstance(target, Contact):
+            if target.type not in (
                 SceneType.FRIEND,
                 SceneType.STRANGER,
                 SceneType.STRANGER_FROM_GROUP,
                 SceneType.NEARBY,
             ):
                 raise ValueError("Contact must be FRIEND")
-            target_uin = int(targets.id)
-            args = {"target_uins": [target_uin]}
-        elif isinstance(targets, Sender):
-            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+            args = {"target_uin": int(target.id), "vote_count": vote_count}
+        elif isinstance(target, Sender):
+            args = (
+                {"target_uin": target.uin, "vote_count": vote_count}
+                if target.uin
+                else {"target_uid": target.uid, "vote_count": vote_count}
+            )
         else:
-            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
-        return await self.service.friend.vote_user(VoteUserRequest(**args, vote_count=vote_count))
+            args = (
+                {"target_uin": target, "vote_count": vote_count}
+                if isinstance(target, int)
+                else {"target_uid": target, "vote_count": vote_count}
+            )
+        return await self.service.friend.vote_user(VoteUserRequest().from_pydict(args))
 
     @API
     async def get_group_info(
@@ -1295,8 +1316,10 @@ class Bot(BaseBot):
         if isinstance(group_id, Contact):
             if group_id.type != SceneType.GROUP:
                 raise ValueError("Contact must be GROUP")
-            group_id = int(group_id.id)
-        return (await self.service.group.get_group_info(GetGroupInfoRequest(group_id=group_id))).group_info
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        return (await self.service.group.get_group_info(GetGroupInfoRequest(group_id=_group_id))).group_info
 
     @API
     async def get_group_list(
@@ -1311,28 +1334,30 @@ class Bot(BaseBot):
         self,
         *,
         group_id: Union[int, str, Contact],
-        targets: Union[list[str], list[int], Sender],
+        target: Union[int, str, Sender],
         refresh: bool = False,
     ):
         """获取群成员信息
 
         参数:
             group_id: 群ID
-            targets: UIN列表 或 UID列表
+            target: UIN 或 UID
             refresh: 是否刷新
         """
         if isinstance(group_id, Contact):
             if group_id.type != SceneType.GROUP:
                 raise ValueError("Contact must be GROUP")
-            group_id = int(group_id.id)
-        if isinstance(targets, Sender):
-            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+            _group_id = int(group_id.id)
         else:
-            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+            _group_id = int(group_id)
+        if isinstance(target, Sender):
+            args: dict = {"target_uin": target.uin} if target.uin else {"target_uid": target.uid}
+        else:
+            args: dict = {"target_uin": target} if isinstance(target, int) else {"target_uid": target}
+        args["group_id"] = _group_id
+        args["refresh"] = refresh
         return (
-            await self.service.group.get_group_member_info(
-                GetGroupMemberInfoRequest(group_id=group_id, **args, refresh=refresh)
-            )
+            await self.service.group.get_group_member_info(GetGroupMemberInfoRequest().from_pydict(args))
         ).group_member_info
 
     @API
@@ -1351,10 +1376,12 @@ class Bot(BaseBot):
         if isinstance(group_id, Contact):
             if group_id.type != SceneType.GROUP:
                 raise ValueError("Contact must be GROUP")
-            group_id = int(group_id.id)
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
         return (
             await self.service.group.get_group_member_list(
-                GetGroupMemberListRequest(group_id=group_id, refresh=refresh)
+                GetGroupMemberListRequest(group_id=_group_id, refresh=refresh)
             )
         ).group_members_info
 
@@ -1372,9 +1399,11 @@ class Bot(BaseBot):
         if isinstance(group_id, Contact):
             if group_id.type != SceneType.GROUP:
                 raise ValueError("Contact must be GROUP")
-            group_id = int(group_id.id)
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
         return (
-            await self.service.group.get_prohibited_user_list(GetProhibitedUserListRequest(group_id=group_id))
+            await self.service.group.get_prohibited_user_list(GetProhibitedUserListRequest(group_id=_group_id))
         ).prohibited_users_info
 
     @API
@@ -1382,14 +1411,14 @@ class Bot(BaseBot):
         self,
         *,
         group_id: Union[int, str, Contact],
-        targets: Union[list[str], list[int], Sender],
+        target: Union[int, str, Sender],
         duration: int = 0,
     ) -> None:
         """禁言成员
 
         参数:
             group_id: 群ID
-            targets: UIN列表 或 UID列表
+            target: UIN 或 UID
             duration: 禁言时长, 0为解除禁言
         """
         if isinstance(group_id, Contact):
@@ -1398,10 +1427,10 @@ class Bot(BaseBot):
             _group_id = int(group_id.id)
         else:
             _group_id = int(group_id)
-        if isinstance(targets, Sender):
-            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+        if isinstance(target, Sender):
+            args: dict = {"target_uin": target.uin} if target.uin else {"target_uid": target.uid}
         else:
-            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+            args: dict = {"target_uin": target} if isinstance(target, int) else {"target_uid": target}
         await self.service.group.ban_member(BanMemberRequest(group_id=_group_id, **args, duration=duration))
 
     @API
@@ -1409,13 +1438,13 @@ class Bot(BaseBot):
         self,
         *,
         group_id: Union[int, str, Contact],
-        targets: Union[list[str], list[int], Sender],
+        target: Union[int, str, Sender],
     ) -> None:
         """双击成员头像
 
         参数:
             group_id: 群ID
-            targets: UIN列表 或 UID列表
+            target: UIN 或 UID
         """
         if isinstance(group_id, Contact):
             if group_id.type != SceneType.GROUP:
@@ -1423,10 +1452,10 @@ class Bot(BaseBot):
             _group_id = int(group_id.id)
         else:
             _group_id = int(group_id)
-        if isinstance(targets, Sender):
-            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+        if isinstance(target, Sender):
+            args: dict = {"target_uin": target.uin} if target.uin else {"target_uid": target.uid}
         else:
-            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+            args: dict = {"target_uin": target} if isinstance(target, int) else {"target_uid": target}
         await self.service.group.poke_member(PokeMemberRequest(group_id=_group_id, **args))
 
     @API
@@ -1434,7 +1463,7 @@ class Bot(BaseBot):
         self,
         *,
         group_id: Union[int, str, Contact],
-        targets: Union[list[str], list[int], Sender],
+        target: Union[int, str, Sender],
         reject_add_request: bool = False,
         reason: Optional[str] = None,
     ) -> None:
@@ -1442,7 +1471,7 @@ class Bot(BaseBot):
 
         参数:
             group_id: 群ID
-            targets: UIN列表 或 UID列表
+            targets: UIN 或 UID
             reject_add_request: 是否拒绝再次加群
             reason: 踢出原因
         """
@@ -1452,10 +1481,10 @@ class Bot(BaseBot):
             _group_id = int(group_id.id)
         else:
             _group_id = int(group_id)
-        if isinstance(targets, Sender):
-            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+        if isinstance(target, Sender):
+            args: dict = {"target_uin": target.uin} if target.uin else {"target_uid": target.uid}
         else:
-            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+            args: dict = {"target_uin": target} if isinstance(target, int) else {"target_uid": target}
         await self.service.group.kick_member(
             KickMemberRequest(group_id=_group_id, **args, reject_add_request=reject_add_request, kick_reason=reason)
         )
@@ -1484,14 +1513,14 @@ class Bot(BaseBot):
         self,
         *,
         group_id: Union[int, str, Contact],
-        targets: Union[list[str], list[int], Sender],
+        target: Union[int, str, Sender],
         card: str,
     ) -> None:
         """修改群名片
 
         参数:
             group_id: 群ID
-            targets: UIN列表 或 UID列表
+            target: UIN列表 或 UID列表
             card: 新的群名片
         """
         if isinstance(group_id, Contact):
@@ -1500,10 +1529,10 @@ class Bot(BaseBot):
             _group_id = int(group_id.id)
         else:
             _group_id = int(group_id)
-        if isinstance(targets, Sender):
-            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+        if isinstance(target, Sender):
+            args: dict = {"target_uin": target.uin} if target.uin else {"target_uid": target.uid}
         else:
-            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+            args: dict = {"target_uin": target} if isinstance(target, int) else {"target_uid": target}
         await self.service.group.modify_member_card(ModifyMemberCardRequest(group_id=_group_id, **args, card=card))
 
     @API
@@ -1553,14 +1582,14 @@ class Bot(BaseBot):
         self,
         *,
         group_id: Union[int, str, Contact],
-        targets: Union[list[str], list[int], Sender],
+        target: Union[int, str, Sender],
         is_set: bool,
     ) -> None:
         """设置管理员
 
         参数:
             group_id: 群ID
-            targets: UIN列表 或 UID列表
+            target: UIN 或 UID
             is_set: 是否设置为管理员
         """
         if isinstance(group_id, Contact):
@@ -1569,10 +1598,10 @@ class Bot(BaseBot):
             _group_id = int(group_id.id)
         else:
             _group_id = int(group_id)
-        if isinstance(targets, Sender):
-            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+        if isinstance(target, Sender):
+            args: dict = {"target_uin": target.uin} if target.uin else {"target_uid": target.uid}
         else:
-            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+            args: dict = {"target_uin": target} if isinstance(target, int) else {"target_uid": target}
         await self.service.group.set_group_admin(SetGroupAdminRequest(group_id=_group_id, **args, is_admin=is_set))
 
     @API
@@ -1580,14 +1609,14 @@ class Bot(BaseBot):
         self,
         *,
         group_id: Union[int, str, Contact],
-        targets: Union[list[str], list[int], Sender],
+        target: Union[int, str, Sender],
         title: str,
     ) -> None:
         """设置专属头衔
 
         参数:
             group_id: 群ID
-            targets: UIN列表 或 UID列表
+            target: UIN 或 UID
             title: 新的群头衔
         """
         if isinstance(group_id, Contact):
@@ -1596,10 +1625,10 @@ class Bot(BaseBot):
             _group_id = int(group_id.id)
         else:
             _group_id = int(group_id)
-        if isinstance(targets, Sender):
-            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+        if isinstance(target, Sender):
+            args: dict = {"target_uin": target.uin} if target.uin else {"target_uid": target.uid}
         else:
-            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+            args: dict = {"target_uin": target} if isinstance(target, int) else {"target_uid": target}
         await self.service.group.set_group_unique_title(
             SetGroupUniqueTitleRequest(group_id=_group_id, **args, unique_title=title)
         )
@@ -1620,8 +1649,10 @@ class Bot(BaseBot):
         if isinstance(group_id, Contact):
             if group_id.type != SceneType.GROUP:
                 raise ValueError("Contact must be GROUP")
-            group_id = int(group_id.id)
-        await self.service.group.set_group_whole_ban(SetGroupWholeBanRequest(group_id=group_id, is_ban=is_ban))
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        await self.service.group.set_group_whole_ban(SetGroupWholeBanRequest(group_id=_group_id, is_ban=is_ban))
 
     @API
     async def get_remain_count_at_all(
@@ -1637,8 +1668,10 @@ class Bot(BaseBot):
         if isinstance(group_id, Contact):
             if group_id.type != SceneType.GROUP:
                 raise ValueError("Contact must be GROUP")
-            group_id = int(group_id.id)
-        return await self.service.group.get_remain_count_at_all(GetRemainCountAtAllRequest(group_id=group_id))
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        return await self.service.group.get_remain_count_at_all(GetRemainCountAtAllRequest(group_id=_group_id))
 
     @API
     async def get_not_joined_group_info(
@@ -1654,9 +1687,11 @@ class Bot(BaseBot):
         if isinstance(group_id, Contact):
             if group_id.type != SceneType.GROUP:
                 raise ValueError("Contact must be GROUP")
-            group_id = int(group_id.id)
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
         return (
-            await self.service.group.get_not_joined_group_info(GetNotJoinedGroupInfoRequest(group_id=group_id))
+            await self.service.group.get_not_joined_group_info(GetNotJoinedGroupInfoRequest(group_id=_group_id))
         ).group_info
 
     @API
@@ -1674,7 +1709,9 @@ class Bot(BaseBot):
         if isinstance(group_id, Contact):
             if group_id.type != SceneType.GROUP:
                 raise ValueError("Contact must be GROUP")
-            group_id = int(group_id.id)
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
         return (
-            await self.service.group.get_group_honor(GetGroupHonorRequest(group_id=group_id, refresh=refresh))
+            await self.service.group.get_group_honor(GetGroupHonorRequest(group_id=_group_id, refresh=refresh))
         ).group_honors_info
