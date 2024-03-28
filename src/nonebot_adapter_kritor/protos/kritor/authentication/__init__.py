@@ -4,22 +4,16 @@
 # This file has been @generated
 
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import TYPE_CHECKING, Dict, List, Optional
 
-import betterproto
 import grpclib
+import betterproto
 from betterproto.grpc.grpclib_server import ServiceBase
-
 
 if TYPE_CHECKING:
     import grpclib.server
-    from betterproto.grpc.grpclib_client import MetadataLike
     from grpclib.metadata import Deadline
+    from betterproto.grpc.grpclib_client import MetadataLike
 
 
 class TicketOperationResponseCode(betterproto.Enum):
@@ -104,7 +98,7 @@ class AuthenticationServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "AuthenticateResponse":
         return await self._unary_unary(
             "/kritor.authentication.AuthenticationService/Authenticate",
@@ -121,7 +115,7 @@ class AuthenticationServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetAuthenticationStateResponse":
         return await self._unary_unary(
             "/kritor.authentication.AuthenticationService/GetAuthenticationState",
@@ -138,7 +132,7 @@ class AuthenticationServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetTicketResponse":
         return await self._unary_unary(
             "/kritor.authentication.AuthenticationService/GetTicket",
@@ -155,7 +149,7 @@ class AuthenticationServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "DeleteTicketResponse":
         return await self._unary_unary(
             "/kritor.authentication.AuthenticationService/DeleteTicket",
@@ -172,7 +166,7 @@ class AuthenticationServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "AddTicketResponse":
         return await self._unary_unary(
             "/kritor.authentication.AuthenticationService/AddTicket",
@@ -186,9 +180,7 @@ class AuthenticationServiceStub(betterproto.ServiceStub):
 
 class AuthenticationServiceBase(ServiceBase):
 
-    async def authenticate(
-        self, authenticate_request: "AuthenticateRequest"
-    ) -> "AuthenticateResponse":
+    async def authenticate(self, authenticate_request: "AuthenticateRequest") -> "AuthenticateResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def get_authentication_state(
@@ -196,19 +188,13 @@ class AuthenticationServiceBase(ServiceBase):
     ) -> "GetAuthenticationStateResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_ticket(
-        self, get_ticket_request: "GetTicketRequest"
-    ) -> "GetTicketResponse":
+    async def get_ticket(self, get_ticket_request: "GetTicketRequest") -> "GetTicketResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def delete_ticket(
-        self, delete_ticket_request: "DeleteTicketRequest"
-    ) -> "DeleteTicketResponse":
+    async def delete_ticket(self, delete_ticket_request: "DeleteTicketRequest") -> "DeleteTicketResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def add_ticket(
-        self, add_ticket_request: "AddTicketRequest"
-    ) -> "AddTicketResponse":
+    async def add_ticket(self, add_ticket_request: "AddTicketRequest") -> "AddTicketResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_authenticate(
@@ -226,9 +212,7 @@ class AuthenticationServiceBase(ServiceBase):
         response = await self.get_authentication_state(request)
         await stream.send_message(response)
 
-    async def __rpc_get_ticket(
-        self, stream: "grpclib.server.Stream[GetTicketRequest, GetTicketResponse]"
-    ) -> None:
+    async def __rpc_get_ticket(self, stream: "grpclib.server.Stream[GetTicketRequest, GetTicketResponse]") -> None:
         request = await stream.recv_message()
         response = await self.get_ticket(request)
         await stream.send_message(response)
@@ -240,9 +224,7 @@ class AuthenticationServiceBase(ServiceBase):
         response = await self.delete_ticket(request)
         await stream.send_message(response)
 
-    async def __rpc_add_ticket(
-        self, stream: "grpclib.server.Stream[AddTicketRequest, AddTicketResponse]"
-    ) -> None:
+    async def __rpc_add_ticket(self, stream: "grpclib.server.Stream[AddTicketRequest, AddTicketResponse]") -> None:
         request = await stream.recv_message()
         response = await self.add_ticket(request)
         await stream.send_message(response)

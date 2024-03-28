@@ -4,23 +4,18 @@
 # This file has been @generated
 
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    Optional,
-)
+from typing import TYPE_CHECKING, Dict, Optional
 
-import betterproto
 import grpclib
+import betterproto
 from betterproto.grpc.grpclib_server import ServiceBase
 
 from .. import common as _common__
 
-
 if TYPE_CHECKING:
     import grpclib.server
-    from betterproto.grpc.grpclib_client import MetadataLike
     from grpclib.metadata import Deadline
+    from betterproto.grpc.grpclib_client import MetadataLike
 
 
 class CustomizationServiceStub(betterproto.ServiceStub):
@@ -30,7 +25,7 @@ class CustomizationServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "_common__.Response":
         return await self._unary_unary(
             "/kritor.customization.CustomizationService/CallFunction",
@@ -44,14 +39,10 @@ class CustomizationServiceStub(betterproto.ServiceStub):
 
 class CustomizationServiceBase(ServiceBase):
 
-    async def call_function(
-        self, common_request: "_common__.Request"
-    ) -> "_common__.Response":
+    async def call_function(self, common_request: "_common__.Request") -> "_common__.Response":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_call_function(
-        self, stream: "grpclib.server.Stream[_common__.Request, _common__.Response]"
-    ) -> None:
+    async def __rpc_call_function(self, stream: "grpclib.server.Stream[_common__.Request, _common__.Response]") -> None:
         request = await stream.recv_message()
         response = await self.call_function(request)
         await stream.send_message(response)

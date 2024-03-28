@@ -4,33 +4,25 @@
 # This file has been @generated
 
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import TYPE_CHECKING, Dict, List, Optional
 
-import betterproto
 import grpclib
+import betterproto
 from betterproto.grpc.grpclib_server import ServiceBase
 
 from .. import common as _common__
 
-
 if TYPE_CHECKING:
     import grpclib.server
-    from betterproto.grpc.grpclib_client import MetadataLike
     from grpclib.metadata import Deadline
+    from betterproto.grpc.grpclib_client import MetadataLike
 
 
 @dataclass(eq=False, repr=False)
 class SendMessageRequest(betterproto.Message):
     contact: "_common__.Contact" = betterproto.message_field(1)
     elements: List["_common__.Element"] = betterproto.message_field(2)
-    retry_count: Optional[int] = betterproto.uint32_field(
-        3, optional=True, group="_retry_count"
-    )
+    retry_count: Optional[int] = betterproto.uint32_field(3, optional=True, group="_retry_count")
 
 
 @dataclass(eq=False, repr=False)
@@ -43,9 +35,7 @@ class SendMessageResponse(betterproto.Message):
 class SendMessageByResIdRequest(betterproto.Message):
     contact: "_common__.Contact" = betterproto.message_field(1)
     res_id: str = betterproto.string_field(2)
-    retry_count: Optional[int] = betterproto.uint32_field(
-        3, optional=True, group="_retry_count"
-    )
+    retry_count: Optional[int] = betterproto.uint32_field(3, optional=True, group="_retry_count")
 
 
 @dataclass(eq=False, repr=False)
@@ -113,9 +103,7 @@ class GetMessageBySeqResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetHistoryMessageRequest(betterproto.Message):
     contact: "_common__.Contact" = betterproto.message_field(1)
-    start_message_id: Optional[str] = betterproto.string_field(
-        2, optional=True, group="_start_message_id"
-    )
+    start_message_id: Optional[str] = betterproto.string_field(2, optional=True, group="_start_message_id")
     count: Optional[int] = betterproto.uint32_field(3, optional=True, group="_count")
 
 
@@ -127,9 +115,7 @@ class GetHistoryMessageResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetHistoryMessageBySeqRequest(betterproto.Message):
     contact: "_common__.Contact" = betterproto.message_field(1)
-    start_message_seq: Optional[int] = betterproto.uint64_field(
-        2, optional=True, group="_start_message_seq"
-    )
+    start_message_seq: Optional[int] = betterproto.uint64_field(2, optional=True, group="_start_message_seq")
     count: Optional[int] = betterproto.uint32_field(3, optional=True, group="_count")
 
 
@@ -142,9 +128,7 @@ class GetHistoryMessageBySeqResponse(betterproto.Message):
 class UploadForwardMessageRequest(betterproto.Message):
     contact: "_common__.Contact" = betterproto.message_field(1)
     messages: List["_common__.ForwardMessageBody"] = betterproto.message_field(2)
-    retry_count: Optional[int] = betterproto.uint32_field(
-        3, optional=True, group="_retry_count"
-    )
+    retry_count: Optional[int] = betterproto.uint32_field(3, optional=True, group="_retry_count")
 
 
 @dataclass(eq=False, repr=False)
@@ -203,7 +187,7 @@ class MessageServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "SendMessageResponse":
         return await self._unary_unary(
             "/kritor.message.MessageService/SendMessage",
@@ -220,7 +204,7 @@ class MessageServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "SendMessageByResIdResponse":
         return await self._unary_unary(
             "/kritor.message.MessageService/SendMessageByResId",
@@ -237,7 +221,7 @@ class MessageServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "SetMessageReadResponse":
         return await self._unary_unary(
             "/kritor.message.MessageService/SetMessageReaded",
@@ -254,7 +238,7 @@ class MessageServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "RecallMessageResponse":
         return await self._unary_unary(
             "/kritor.message.MessageService/RecallMessage",
@@ -271,7 +255,7 @@ class MessageServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "ReactMessageWithEmojiResponse":
         return await self._unary_unary(
             "/kritor.message.MessageService/ReactMessageWithEmoji",
@@ -288,7 +272,7 @@ class MessageServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetMessageResponse":
         return await self._unary_unary(
             "/kritor.message.MessageService/GetMessage",
@@ -305,7 +289,7 @@ class MessageServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetMessageBySeqResponse":
         return await self._unary_unary(
             "/kritor.message.MessageService/GetMessageBySeq",
@@ -322,7 +306,7 @@ class MessageServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetHistoryMessageResponse":
         return await self._unary_unary(
             "/kritor.message.MessageService/GetHistoryMessage",
@@ -339,7 +323,7 @@ class MessageServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetHistoryMessageBySeqResponse":
         return await self._unary_unary(
             "/kritor.message.MessageService/GetHistoryMessageBySeq",
@@ -356,7 +340,7 @@ class MessageServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "UploadForwardMessageResponse":
         return await self._unary_unary(
             "/kritor.message.MessageService/UploadForwardMessage",
@@ -373,7 +357,7 @@ class MessageServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "DownloadForwardMessageResponse":
         return await self._unary_unary(
             "/kritor.message.MessageService/DownloadForwardMessage",
@@ -390,7 +374,7 @@ class MessageServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "DeleteEssenceMessageResponse":
         return await self._unary_unary(
             "/kritor.message.MessageService/DeleteEssenceMessage",
@@ -407,7 +391,7 @@ class MessageServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetEssenceMessageListResponse":
         return await self._unary_unary(
             "/kritor.message.MessageService/GetEssenceMessageList",
@@ -424,7 +408,7 @@ class MessageServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "SetEssenceMessageResponse":
         return await self._unary_unary(
             "/kritor.message.MessageService/SetEssenceMessage",
@@ -438,9 +422,7 @@ class MessageServiceStub(betterproto.ServiceStub):
 
 class MessageServiceBase(ServiceBase):
 
-    async def send_message(
-        self, send_message_request: "SendMessageRequest"
-    ) -> "SendMessageResponse":
+    async def send_message(self, send_message_request: "SendMessageRequest") -> "SendMessageResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def send_message_by_res_id(
@@ -448,14 +430,10 @@ class MessageServiceBase(ServiceBase):
     ) -> "SendMessageByResIdResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def set_message_readed(
-        self, set_message_read_request: "SetMessageReadRequest"
-    ) -> "SetMessageReadResponse":
+    async def set_message_readed(self, set_message_read_request: "SetMessageReadRequest") -> "SetMessageReadResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def recall_message(
-        self, recall_message_request: "RecallMessageRequest"
-    ) -> "RecallMessageResponse":
+    async def recall_message(self, recall_message_request: "RecallMessageRequest") -> "RecallMessageResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def react_message_with_emoji(
@@ -463,9 +441,7 @@ class MessageServiceBase(ServiceBase):
     ) -> "ReactMessageWithEmojiResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_message(
-        self, get_message_request: "GetMessageRequest"
-    ) -> "GetMessageResponse":
+    async def get_message(self, get_message_request: "GetMessageRequest") -> "GetMessageResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def get_message_by_seq(
@@ -547,9 +523,7 @@ class MessageServiceBase(ServiceBase):
         response = await self.react_message_with_emoji(request)
         await stream.send_message(response)
 
-    async def __rpc_get_message(
-        self, stream: "grpclib.server.Stream[GetMessageRequest, GetMessageResponse]"
-    ) -> None:
+    async def __rpc_get_message(self, stream: "grpclib.server.Stream[GetMessageRequest, GetMessageResponse]") -> None:
         request = await stream.recv_message()
         response = await self.get_message(request)
         await stream.send_message(response)

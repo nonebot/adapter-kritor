@@ -4,27 +4,18 @@
 # This file has been @generated
 
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    AsyncIterable,
-    AsyncIterator,
-    Dict,
-    Iterable,
-    Optional,
-    Union,
-)
+from typing import TYPE_CHECKING, Dict, Union, Iterable, Optional, AsyncIterable, AsyncIterator
 
-import betterproto
 import grpclib
+import betterproto
 from betterproto.grpc.grpclib_server import ServiceBase
 
 from .. import common as _common__
 
-
 if TYPE_CHECKING:
     import grpclib.server
-    from betterproto.grpc.grpclib_client import MetadataLike
     from grpclib.metadata import Deadline
+    from betterproto.grpc.grpclib_client import MetadataLike
 
 
 class GroupMemberIncreasedNoticeGroupMemberIncreasedType(betterproto.Enum):
@@ -139,29 +130,17 @@ class GroupMemberIncreasedNotice(betterproto.Message):
     operator_uin: int = betterproto.uint64_field(3)
     target_uid: str = betterproto.string_field(4)
     target_uin: int = betterproto.uint64_field(5)
-    type: "GroupMemberIncreasedNoticeGroupMemberIncreasedType" = betterproto.enum_field(
-        6
-    )
+    type: "GroupMemberIncreasedNoticeGroupMemberIncreasedType" = betterproto.enum_field(6)
 
 
 @dataclass(eq=False, repr=False)
 class GroupMemberDecreasedNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    operator_uid: Optional[str] = betterproto.string_field(
-        2, optional=True, group="_operator_uid"
-    )
-    operator_uin: Optional[int] = betterproto.uint64_field(
-        3, optional=True, group="_operator_uin"
-    )
-    target_uid: Optional[str] = betterproto.string_field(
-        4, optional=True, group="_target_uid"
-    )
-    target_uin: Optional[int] = betterproto.uint64_field(
-        5, optional=True, group="_target_uin"
-    )
-    type: "GroupMemberDecreasedNoticeGroupMemberDecreasedType" = betterproto.enum_field(
-        6
-    )
+    operator_uid: Optional[str] = betterproto.string_field(2, optional=True, group="_operator_uid")
+    operator_uin: Optional[int] = betterproto.uint64_field(3, optional=True, group="_operator_uin")
+    target_uid: Optional[str] = betterproto.string_field(4, optional=True, group="_target_uid")
+    target_uin: Optional[int] = betterproto.uint64_field(5, optional=True, group="_target_uin")
+    type: "GroupMemberDecreasedNoticeGroupMemberDecreasedType" = betterproto.enum_field(6)
 
 
 @dataclass(eq=False, repr=False)
@@ -245,39 +224,19 @@ class NoticeEvent(betterproto.Message):
     time: int = betterproto.uint32_field(2)
     friend_poke: "FriendPokeNotice" = betterproto.message_field(10, group="notice")
     friend_recall: "FriendRecallNotice" = betterproto.message_field(11, group="notice")
-    friend_file_uploaded: "FriendFileUploadedNotice" = betterproto.message_field(
-        12, group="notice"
-    )
+    friend_file_uploaded: "FriendFileUploadedNotice" = betterproto.message_field(12, group="notice")
     group_poke: "GroupPokeNotice" = betterproto.message_field(20, group="notice")
-    group_card_changed: "GroupCardChangedNotice" = betterproto.message_field(
-        21, group="notice"
-    )
-    group_member_unique_title_changed: "GroupUniqueTitleChangedNotice" = (
-        betterproto.message_field(22, group="notice")
-    )
-    group_essence_changed: "GroupEssenceMessageNotice" = betterproto.message_field(
-        23, group="notice"
-    )
+    group_card_changed: "GroupCardChangedNotice" = betterproto.message_field(21, group="notice")
+    group_member_unique_title_changed: "GroupUniqueTitleChangedNotice" = betterproto.message_field(22, group="notice")
+    group_essence_changed: "GroupEssenceMessageNotice" = betterproto.message_field(23, group="notice")
     group_recall: "GroupRecallNotice" = betterproto.message_field(24, group="notice")
-    group_member_increase: "GroupMemberIncreasedNotice" = betterproto.message_field(
-        25, group="notice"
-    )
-    group_member_decrease: "GroupMemberDecreasedNotice" = betterproto.message_field(
-        26, group="notice"
-    )
-    group_admin_change: "GroupAdminChangedNotice" = betterproto.message_field(
-        27, group="notice"
-    )
-    group_member_ban: "GroupMemberBanNotice" = betterproto.message_field(
-        28, group="notice"
-    )
+    group_member_increase: "GroupMemberIncreasedNotice" = betterproto.message_field(25, group="notice")
+    group_member_decrease: "GroupMemberDecreasedNotice" = betterproto.message_field(26, group="notice")
+    group_admin_change: "GroupAdminChangedNotice" = betterproto.message_field(27, group="notice")
+    group_member_ban: "GroupMemberBanNotice" = betterproto.message_field(28, group="notice")
     group_sign_in: "GroupSignInNotice" = betterproto.message_field(29, group="notice")
-    group_whole_ban: "GroupWholeBanNotice" = betterproto.message_field(
-        30, group="notice"
-    )
-    group_file_uploaded: "GroupFileUploadedNotice" = betterproto.message_field(
-        31, group="notice"
-    )
+    group_whole_ban: "GroupWholeBanNotice" = betterproto.message_field(30, group="notice")
+    group_file_uploaded: "GroupFileUploadedNotice" = betterproto.message_field(31, group="notice")
 
 
 @dataclass(eq=False, repr=False)
@@ -313,9 +272,7 @@ class RequestsEvent(betterproto.Message):
     time: int = betterproto.uint32_field(2)
     friend_apply: "FriendApplyRequest" = betterproto.message_field(3, group="request")
     group_apply: "GroupApplyRequest" = betterproto.message_field(4, group="request")
-    invited_group: "InvitedJoinGroupRequest" = betterproto.message_field(
-        5, group="request"
-    )
+    invited_group: "InvitedJoinGroupRequest" = betterproto.message_field(5, group="request")
 
 
 @dataclass(eq=False, repr=False)
@@ -338,7 +295,7 @@ class EventServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> AsyncIterator["EventStructure"]:
         async for response in self._unary_stream(
             "/kritor.event.EventService/RegisterActiveListener",
@@ -352,13 +309,11 @@ class EventServiceStub(betterproto.ServiceStub):
 
     async def register_passive_listener(
         self,
-        event_structure_iterator: Union[
-            AsyncIterable["EventStructure"], Iterable["EventStructure"]
-        ],
+        event_structure_iterator: Union[AsyncIterable["EventStructure"], Iterable["EventStructure"]],
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "RequestPushEvent":
         return await self._stream_unary(
             "/kritor.event.EventService/RegisterPassiveListener",
@@ -373,9 +328,7 @@ class EventServiceStub(betterproto.ServiceStub):
 
 class EventServiceBase(ServiceBase):
 
-    async def register_active_listener(
-        self, request_push_event: "RequestPushEvent"
-    ) -> AsyncIterator["EventStructure"]:
+    async def register_active_listener(self, request_push_event: "RequestPushEvent") -> AsyncIterator["EventStructure"]:
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
         yield EventStructure()
 

@@ -4,22 +4,16 @@
 # This file has been @generated
 
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import TYPE_CHECKING, Dict, List, Optional
 
-import betterproto
 import grpclib
+import betterproto
 from betterproto.grpc.grpclib_server import ServiceBase
-
 
 if TYPE_CHECKING:
     import grpclib.server
-    from betterproto.grpc.grpclib_client import MetadataLike
     from grpclib.metadata import Deadline
+    from betterproto.grpc.grpclib_client import MetadataLike
 
 
 class MemberRole(betterproto.Enum):
@@ -85,16 +79,10 @@ class GroupMemberInfo(betterproto.Message):
     last_active_time: int = betterproto.uint64_field(9)
     level: int = betterproto.uint32_field(10)
     shut_up_timestamp: int = betterproto.uint64_field(11)
-    distance: Optional[int] = betterproto.uint32_field(
-        100, optional=True, group="_distance"
-    )
+    distance: Optional[int] = betterproto.uint32_field(100, optional=True, group="_distance")
     honors: List[int] = betterproto.uint32_field(101)
-    unfriendly: Optional[bool] = betterproto.bool_field(
-        102, optional=True, group="_unfriendly"
-    )
-    card_changeable: Optional[bool] = betterproto.bool_field(
-        103, optional=True, group="_card_changeable"
-    )
+    unfriendly: Optional[bool] = betterproto.bool_field(102, optional=True, group="_unfriendly")
+    card_changeable: Optional[bool] = betterproto.bool_field(103, optional=True, group="_card_changeable")
 
 
 @dataclass(eq=False, repr=False)
@@ -127,12 +115,8 @@ class KickMemberRequest(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
     target_uid: str = betterproto.string_field(2, group="target")
     target_uin: int = betterproto.uint64_field(3, group="target")
-    reject_add_request: Optional[bool] = betterproto.bool_field(
-        6, optional=True, group="_reject_add_request"
-    )
-    kick_reason: Optional[str] = betterproto.string_field(
-        5, optional=True, group="_kick_reason"
-    )
+    reject_add_request: Optional[bool] = betterproto.bool_field(6, optional=True, group="_reject_add_request")
+    kick_reason: Optional[str] = betterproto.string_field(5, optional=True, group="_kick_reason")
 
 
 @dataclass(eq=False, repr=False)
@@ -316,7 +300,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "BanMemberResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/BanMember",
@@ -333,7 +317,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "PokeMemberResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/PokeMember",
@@ -350,7 +334,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "KickMemberResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/KickMember",
@@ -367,7 +351,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "LeaveGroupResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/LeaveGroup",
@@ -384,7 +368,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "ModifyMemberCardResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/ModifyMemberCard",
@@ -401,7 +385,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "ModifyGroupNameResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/ModifyGroupName",
@@ -418,7 +402,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "ModifyGroupRemarkResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/ModifyGroupRemark",
@@ -435,7 +419,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "SetGroupAdminResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/SetGroupAdmin",
@@ -452,7 +436,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "SetGroupUniqueTitleResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/SetGroupUniqueTitle",
@@ -469,7 +453,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "SetGroupWholeBanResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/SetGroupWholeBan",
@@ -486,7 +470,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetGroupInfoResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/GetGroupInfo",
@@ -503,7 +487,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetGroupListResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/GetGroupList",
@@ -520,7 +504,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetGroupMemberInfoResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/GetGroupMemberInfo",
@@ -537,7 +521,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetGroupMemberListResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/GetGroupMemberList",
@@ -554,7 +538,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetProhibitedUserListResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/GetProhibitedUserList",
@@ -571,7 +555,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetRemainCountAtAllResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/GetRemainCountAtAll",
@@ -588,7 +572,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetNotJoinedGroupInfoResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/GetNotJoinedGroupInfo",
@@ -605,7 +589,7 @@ class GroupServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetGroupHonorResponse":
         return await self._unary_unary(
             "/kritor.group.GroupService/GetGroupHonor",
@@ -619,24 +603,16 @@ class GroupServiceStub(betterproto.ServiceStub):
 
 class GroupServiceBase(ServiceBase):
 
-    async def ban_member(
-        self, ban_member_request: "BanMemberRequest"
-    ) -> "BanMemberResponse":
+    async def ban_member(self, ban_member_request: "BanMemberRequest") -> "BanMemberResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def poke_member(
-        self, poke_member_request: "PokeMemberRequest"
-    ) -> "PokeMemberResponse":
+    async def poke_member(self, poke_member_request: "PokeMemberRequest") -> "PokeMemberResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def kick_member(
-        self, kick_member_request: "KickMemberRequest"
-    ) -> "KickMemberResponse":
+    async def kick_member(self, kick_member_request: "KickMemberRequest") -> "KickMemberResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def leave_group(
-        self, leave_group_request: "LeaveGroupRequest"
-    ) -> "LeaveGroupResponse":
+    async def leave_group(self, leave_group_request: "LeaveGroupRequest") -> "LeaveGroupResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def modify_member_card(
@@ -644,9 +620,7 @@ class GroupServiceBase(ServiceBase):
     ) -> "ModifyMemberCardResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def modify_group_name(
-        self, modify_group_name_request: "ModifyGroupNameRequest"
-    ) -> "ModifyGroupNameResponse":
+    async def modify_group_name(self, modify_group_name_request: "ModifyGroupNameRequest") -> "ModifyGroupNameResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def modify_group_remark(
@@ -654,9 +628,7 @@ class GroupServiceBase(ServiceBase):
     ) -> "ModifyGroupRemarkResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def set_group_admin(
-        self, set_group_admin_request: "SetGroupAdminRequest"
-    ) -> "SetGroupAdminResponse":
+    async def set_group_admin(self, set_group_admin_request: "SetGroupAdminRequest") -> "SetGroupAdminResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def set_group_unique_title(
@@ -669,14 +641,10 @@ class GroupServiceBase(ServiceBase):
     ) -> "SetGroupWholeBanResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_group_info(
-        self, get_group_info_request: "GetGroupInfoRequest"
-    ) -> "GetGroupInfoResponse":
+    async def get_group_info(self, get_group_info_request: "GetGroupInfoRequest") -> "GetGroupInfoResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_group_list(
-        self, get_group_list_request: "GetGroupListRequest"
-    ) -> "GetGroupListResponse":
+    async def get_group_list(self, get_group_list_request: "GetGroupListRequest") -> "GetGroupListResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def get_group_member_info(
@@ -704,35 +672,25 @@ class GroupServiceBase(ServiceBase):
     ) -> "GetNotJoinedGroupInfoResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_group_honor(
-        self, get_group_honor_request: "GetGroupHonorRequest"
-    ) -> "GetGroupHonorResponse":
+    async def get_group_honor(self, get_group_honor_request: "GetGroupHonorRequest") -> "GetGroupHonorResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_ban_member(
-        self, stream: "grpclib.server.Stream[BanMemberRequest, BanMemberResponse]"
-    ) -> None:
+    async def __rpc_ban_member(self, stream: "grpclib.server.Stream[BanMemberRequest, BanMemberResponse]") -> None:
         request = await stream.recv_message()
         response = await self.ban_member(request)
         await stream.send_message(response)
 
-    async def __rpc_poke_member(
-        self, stream: "grpclib.server.Stream[PokeMemberRequest, PokeMemberResponse]"
-    ) -> None:
+    async def __rpc_poke_member(self, stream: "grpclib.server.Stream[PokeMemberRequest, PokeMemberResponse]") -> None:
         request = await stream.recv_message()
         response = await self.poke_member(request)
         await stream.send_message(response)
 
-    async def __rpc_kick_member(
-        self, stream: "grpclib.server.Stream[KickMemberRequest, KickMemberResponse]"
-    ) -> None:
+    async def __rpc_kick_member(self, stream: "grpclib.server.Stream[KickMemberRequest, KickMemberResponse]") -> None:
         request = await stream.recv_message()
         response = await self.kick_member(request)
         await stream.send_message(response)
 
-    async def __rpc_leave_group(
-        self, stream: "grpclib.server.Stream[LeaveGroupRequest, LeaveGroupResponse]"
-    ) -> None:
+    async def __rpc_leave_group(self, stream: "grpclib.server.Stream[LeaveGroupRequest, LeaveGroupResponse]") -> None:
         request = await stream.recv_message()
         response = await self.leave_group(request)
         await stream.send_message(response)

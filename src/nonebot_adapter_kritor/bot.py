@@ -1,4 +1,6 @@
 import re
+from io import BytesIO
+from pathlib import Path
 from typing_extensions import override
 from typing import TYPE_CHECKING, Union, Optional
 
@@ -8,12 +10,63 @@ from nonebot.message import handle_event
 from nonebot.adapters import Bot as BaseBot
 from nonebot.compat import type_validate_python
 
-from .model import Contact
 from .utils import API, log
 from .config import ClientInfo
+from .model import Sender, Contact, SceneType
 from .message import Reply, Message, MessageSegment
 from .event import Event, MessageEvent, MessageEventType
 from .protos.kritor.common import Element, ForwardMessageBody
+from .protos.kritor.core import (
+    CoreServiceStub,
+    GetVersionRequest,
+    DownloadFileRequest,
+    SwitchAccountRequest,
+    GetCurrentAccountRequest,
+)
+from .protos.kritor.developer import (
+    ShellRequest,
+    GetLogRequest,
+    ClearCacheRequest,
+    UploadImageRequest,
+    DeveloperServiceStub,
+    GetDeviceBatteryRequest,
+)
+from .protos.kritor.file import (
+    DeleteFileRequest,
+    GetFileListRequest,
+    CreateFolderRequest,
+    DeleteFolderRequest,
+    RenameFolderRequest,
+    GroupFileServiceStub,
+    GetFileSystemInfoRequest,
+)
+from .protos.kritor.friend import (
+    GetUidRequest,
+    VoteUserRequest,
+    FriendServiceStub,
+    GetUinByUidRequest,
+    GetFriendListRequest,
+    SetProfileCardRequest,
+    IsBlackListUserRequest,
+    GetFriendProfileCardRequest,
+    GetStrangerProfileCardRequest,
+)
+from .protos.kritor.guild import (
+    GuildServiceStub,
+    GetBotInfoRequest,
+    GetChannelListRequest,
+    GetGuildMemberRequest,
+    CreateGuildRoleRequest,
+    DeleteGuildRoleRequest,
+    UpdateGuildRoleRequest,
+    GetGuildFeedListRequest,
+    GetGuildRoleListRequest,
+    GetGuildMemberListRequest,
+    SendChannelMessageRequest,
+    SetGuildMemberRoleRequest,
+    GetGuildChannelListRequest,
+    GetGuildMetaByGuestRequest,
+)
 from .protos.kritor.message import (
     GetMessageRequest,
     MessageServiceStub,
@@ -31,6 +84,27 @@ from .protos.kritor.message import (
     ReactMessageWithEmojiRequest,
     DownloadForwardMessageRequest,
     GetHistoryMessageBySeqRequest,
+)
+from .protos.kritor.group import (
+    BanMemberRequest,
+    GroupServiceStub,
+    KickMemberRequest,
+    LeaveGroupRequest,
+    PokeMemberRequest,
+    GetGroupInfoRequest,
+    GetGroupListRequest,
+    GetGroupHonorRequest,
+    SetGroupAdminRequest,
+    ModifyGroupNameRequest,
+    ModifyMemberCardRequest,
+    SetGroupWholeBanRequest,
+    ModifyGroupRemarkRequest,
+    GetGroupMemberInfoRequest,
+    GetGroupMemberListRequest,
+    GetRemainCountAtAllRequest,
+    SetGroupUniqueTitleRequest,
+    GetNotJoinedGroupInfoRequest,
+    GetProhibitedUserListRequest,
 )
 
 if TYPE_CHECKING:
@@ -149,12 +223,28 @@ class Bot(BaseBot):
     adapter: "Adapter"
 
     @override
-    def __init__(self, adapter: "Adapter", self_id: str, info: ClientInfo, client: Channel):
+    def __init__(self, adapter: "Adapter", self_id: str, info: ClientInfo, client: Channel, need_auth: bool = True):
         super().__init__(adapter, self_id)
 
         # Bot 配置信息
         self.info: ClientInfo = info
         self.client: Channel = client
+
+        if need_auth:
+            metadata = {"ticket": info.ticket}
+        else:
+            metadata = {}
+
+        class service:
+            core = CoreServiceStub(client, metadata=metadata)
+            developer = DeveloperServiceStub(client, metadata=metadata)
+            group = GroupServiceStub(client, metadata=metadata)
+            friend = FriendServiceStub(client, metadata=metadata)
+            guild = GuildServiceStub(client, metadata=metadata)
+            file = GroupFileServiceStub(client, metadata=metadata)
+            message = MessageServiceStub(client, metadata=metadata)
+
+        self.service = service
 
     def __getattr__(self, item):
         raise AttributeError(f"'Bot' object has no attribute '{item}'")
@@ -166,34 +256,6 @@ class Bot(BaseBot):
             _check_nickname(self, event)
         await handle_event(self, event)
 
-    # def _handle_response(self, response: Response) -> Any:
-    #     if 200 <= response.status_code < 300:
-    #         return response.content and json.loads(response.content)
-    #     elif response.status_code == 400:
-    #         raise BadRequestException(response)
-    #     elif response.status_code == 401:
-    #         raise UnauthorizedException(response)
-    #     elif response.status_code == 403:
-    #         raise ForbiddenException(response)
-    #     elif response.status_code == 404:
-    #         raise NotFoundException(response)
-    #     elif response.status_code == 405:
-    #         raise MethodNotAllowedException(response)
-    #     elif response.status_code == 500:
-    #         raise ApiNotImplementedException(response)
-    #     else:
-    #         raise ActionFailed(response)
-
-    # async def _request(self, request: Request) -> Any:
-    #     request.headers.update(self.get_authorization_header())
-    #     request.json = {k: v for k, v in request.json.items() if v is not None} if request.json else None
-    #     try:
-    #         response = await self.adapter.request(request)
-    #     except Exception as e:
-    #         raise NetworkError("API request failed") from e
-
-    #     return self._handle_response(response)
-
     @override
     async def send(
         self,
@@ -203,6 +265,13 @@ class Bot(BaseBot):
     ) -> SendMessageResponse:
         if not isinstance(event, MessageEvent):
             raise RuntimeError("Event cannot be replied to!")
+        if event.contact.type == SceneType.GUILD:
+            return await self.send_channel_message(
+                guild_id=int(event.contact.id),
+                channel_id=int(event.contact.sub_id or "0"),
+                message=str(message),
+                **kwargs,
+            )
         if isinstance(message, str):
             message = Message(message)
         elif isinstance(message, MessageSegment):
@@ -223,8 +292,9 @@ class Bot(BaseBot):
             contact: 要发送的目标
             message: 要发送的消息
         """
-        message = MessageServiceStub(self.client)
-        return await message.send_message(SendMessageRequest(contact=contact.dump(), elements=elements))
+        if contact.type == SceneType.GUILD:
+            raise ValueError("Guild contact is not supported in this method. Use send_channel_message instead.")
+        return await self.service.message.send_message(SendMessageRequest(contact=contact.dump(), elements=elements))
 
     @API
     async def send_message_by_res_id(
@@ -239,8 +309,10 @@ class Bot(BaseBot):
             res_id: 资源ID
             contact: 要发送的目标
         """
-        message = MessageServiceStub(self.client)
-        return await message.send_message_by_res_id(SendMessageByResIdRequest(res_id=res_id, contact=contact.dump()))
+
+        return await self.service.message.send_message_by_res_id(
+            SendMessageByResIdRequest(res_id=res_id, contact=contact.dump())
+        )
 
     @API
     async def get_message(
@@ -253,8 +325,8 @@ class Bot(BaseBot):
         参数:
             message_id: 消息ID
         """
-        message = MessageServiceStub(self.client)
-        return await message.get_message(GetMessageRequest(message_id=message_id))
+
+        return await self.service.message.get_message(GetMessageRequest(message_id=message_id))
 
     @API
     async def get_message_by_seq(
@@ -267,8 +339,8 @@ class Bot(BaseBot):
         参数:
             message_seq: 消息序号
         """
-        message = MessageServiceStub(self.client)
-        return await message.get_message_by_seq(GetMessageBySeqRequest(message_seq=message_seq))
+
+        return await self.service.message.get_message_by_seq(GetMessageBySeqRequest(message_seq=message_seq))
 
     @API
     async def get_history_message(
@@ -285,8 +357,8 @@ class Bot(BaseBot):
             start_message_id: 起始消息ID, 为空则从最新消息开始
             count: 获取数量
         """
-        message = MessageServiceStub(self.client)
-        return await message.get_history_message(
+
+        return await self.service.message.get_history_message(
             GetHistoryMessageRequest(contact=contact.dump(), start_message_id=start_message_id, count=count)
         )
 
@@ -301,8 +373,8 @@ class Bot(BaseBot):
         参数:
             message_id: 消息ID
         """
-        message = MessageServiceStub(self.client)
-        return await message.recall_message(RecallMessageRequest(message_id=message_id))
+
+        return await self.service.message.recall_message(RecallMessageRequest(message_id=message_id))
 
     @API
     async def set_message_comment_emoji(
@@ -321,11 +393,78 @@ class Bot(BaseBot):
             emoji: 表情
             is_comment: 是否评论, False为撤销评论
         """
-        message = MessageServiceStub(self.client)
-        return await message.react_message_with_emoji(
+
+        return await self.service.message.react_message_with_emoji(
             ReactMessageWithEmojiRequest(
                 contact=contact.dump(), message_id=message_id, face_id=emoji, is_comment=is_comment
             )
+        )
+
+    @API
+    async def delete_essence_message(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        message_id: str,
+    ):
+        """删除精华消息
+
+        参数:
+            group_id: 群ID
+            message_id: 消息ID
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        return await self.service.message.delete_essence_message(
+            DeleteEssenceMessageRequest(group_id=_group_id, message_id=message_id)
+        )
+
+    @API
+    async def get_essence_message_list(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+    ):
+        """获取精华消息列表
+
+        参数:
+            group_id: 群ID
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        return (
+            await self.service.message.get_essence_message_list(GetEssenceMessageListRequest(group_id=_group_id))
+        ).messages
+
+    @API
+    async def set_essence_message(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        message_id: str,
+    ):
+        """设置精华消息
+
+        参数:
+            group_id: 群ID
+            message_id: 消息ID
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        return await self.service.message.set_essence_message(
+            SetEssenceMessageRequest(group_id=_group_id, message_id=message_id)
         )
 
     @API
@@ -339,56 +478,8 @@ class Bot(BaseBot):
         参数:
             res_d: 合并转发元素内的资源ID
         """
-        message = MessageServiceStub(self.client)
-        return await message.download_forward_message(DownloadForwardMessageRequest(res_id=res_id))
 
-    @API
-    async def delete_essence_message(
-        self,
-        *,
-        group_id: int,
-        message_id: str,
-    ):
-        """删除精华消息
-
-        参数:
-            group_id: 群ID
-            message_id: 消息ID
-        """
-        message = MessageServiceStub(self.client)
-        return await message.delete_essence_message(
-            DeleteEssenceMessageRequest(group_id=group_id, message_id=message_id)
-        )
-
-    @API
-    async def get_esence_message_list(
-        self,
-        *,
-        group_id: int,
-    ):
-        """获取精华消息列表
-
-        参数:
-            group_id: 群ID
-        """
-        message = MessageServiceStub(self.client)
-        return (await message.get_essence_message_list(GetEssenceMessageListRequest(group_id=group_id))).messages
-
-    @API
-    async def set_essence_message(
-        self,
-        *,
-        group_id: int,
-        message_id: str,
-    ):
-        """设置精华消息
-
-        参数:
-            group_id: 群ID
-            message_id: 消息ID
-        """
-        message = MessageServiceStub(self.client)
-        return await message.set_essence_message(SetEssenceMessageRequest(group_id=group_id, message_id=message_id))
+        return await self.service.message.download_forward_message(DownloadForwardMessageRequest(res_id=res_id))
 
     @API
     async def upload_forward_message(
@@ -397,15 +488,34 @@ class Bot(BaseBot):
         contact: Contact,
         messages: list[ForwardMessageBody],
     ):
-        """上传转发消息
+        """上传合并转发消息
 
         参数:
             contact: 要发送的目标
             messages: 要发送的合并转发消息
         """
-        message = MessageServiceStub(self.client)
-        return await message.upload_forward_message(
+
+        return await self.service.message.upload_forward_message(
             UploadForwardMessageRequest(contact=contact.dump(), messages=messages)
+        )
+
+    async def send_forward_message(
+        self,
+        contact: Contact,
+        messages: list[ForwardMessageBody],
+    ):
+        """发送合并转发消息，即上传合并转发消息并通过返回的资源ID发送
+
+        参数:
+            contact: 要发送的目标
+            messages: 要发送的合并转发消息
+        """
+
+        resp = await self.service.message.upload_forward_message(
+            UploadForwardMessageRequest(contact=contact.dump(), messages=messages)
+        )
+        return await self.service.message.send_message_by_res_id(
+            SendMessageByResIdRequest(res_id=resp.res_id, contact=contact.dump())
         )
 
     @API
@@ -419,8 +529,8 @@ class Bot(BaseBot):
         参数:
             contact: 要发送的目标
         """
-        message = MessageServiceStub(self.client)
-        return await message.set_message_readed(SetMessageReadRequest(contact=contact.dump()))
+
+        return await self.service.message.set_message_readed(SetMessageReadRequest(contact=contact.dump()))
 
     @API
     async def get_history_message_by_seq(
@@ -437,7 +547,632 @@ class Bot(BaseBot):
             start_message_seq: 起始消息序号, 为空则从最新消息开始
             count: 获取数量
         """
-        message = MessageServiceStub(self.client)
-        return await message.get_history_message_by_seq(
+
+        return await self.service.message.get_history_message_by_seq(
             GetHistoryMessageBySeqRequest(contact=contact.dump(), start_message_seq=start_message_seq, count=count)
         )
+
+    @API
+    async def create_folder(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        name: str,
+    ):
+        """创建文件夹
+
+        参数:
+            group_id: 群ID
+            name: 文件夹名
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        return await self.service.file.create_folder(CreateFolderRequest(group_id=_group_id, name=name))
+
+    @API
+    async def delete_folder(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        folder_id: str,
+    ):
+        """删除文件夹
+
+        参数:
+            group_id: 群ID
+            folder_id: 文件夹ID
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        return await self.service.file.delete_folder(DeleteFolderRequest(group_id=_group_id, folder_id=folder_id))
+
+    @API
+    async def delete_file(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        file_id: str,
+        bus_id: int,
+    ):
+        """删除文件
+
+        参数:
+            group_id: 群ID
+            file_id: 文件ID
+            bus_id: 文件类型ID
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        return await self.service.file.delete_file(
+            DeleteFileRequest(group_id=_group_id, file_id=file_id, bus_id=bus_id)
+        )
+
+    @API
+    async def rename_folder(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        folder_id: str,
+        name: str,
+    ):
+        """重命名文件夹
+
+        参数:
+            group_id: 群ID
+            folder_id: 文件夹ID
+            name: 文件夹名
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        return await self.service.file.rename_folder(
+            RenameFolderRequest(group_id=_group_id, folder_id=folder_id, name=name)
+        )
+
+    @API
+    async def get_file_system_info(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+    ):
+        """获取文件系统信息
+
+        参数:
+            group_id: 群ID
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        return await self.service.file.get_file_system_info(GetFileSystemInfoRequest(group_id=_group_id))
+
+    @API
+    async def get_file_list(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        folder_id: Optional[str] = None,
+    ):
+        """获取文件列表
+
+        参数:
+            group_id: 群ID
+            folder_id: 文件夹ID, 为空则获取根目录
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        return await self.service.file.get_file_list(GetFileListRequest(group_id=_group_id, folder_id=folder_id))
+
+    async def get_file(
+        self,
+        group_id: Union[int, str, Contact],
+        file_id: str,
+        folder_id: Optional[str] = None,
+    ):
+        """获取文件, 即先获取文件列表再下载文件
+
+        参数:
+            group_id: 群ID
+            file_id: 文件ID
+            folder_id: 文件夹ID, 为空则获取根目录
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        files = await self.service.file.get_file_list(GetFileListRequest(group_id=_group_id, folder_id=folder_id))
+        for file in files.files:
+            if file.file_id == file_id:
+                return file
+        raise ValueError(f"File {file_id} not found")
+
+    @API
+    async def get_bot_info(
+        self,
+    ):
+        """获取频道系统内的Bot信息"""
+
+        return await self.service.guild.get_bot_info(GetBotInfoRequest())
+
+    @API
+    async def get_guild_list(
+        self,
+    ):
+        """获取频道列表"""
+
+        return (await self.service.guild.get_channel_list(GetChannelListRequest())).get_guild_list
+
+    @API
+    async def get_guild_channel_list(
+        self,
+        *,
+        guild_id: Union[int, str, Contact],
+        refresh: bool = False,
+    ):
+        """获取频道内的频道列表
+
+        参数:
+            guild_id: 频道ID
+            refresh: 是否刷新
+        """
+        if isinstance(guild_id, Contact):
+            if guild_id.type != SceneType.GUILD:
+                raise ValueError("Contact must be GUILD")
+            _guild_id = int(guild_id.id)
+        else:
+            _guild_id = int(guild_id)
+        return (
+            await self.service.guild.get_guild_channel_list(
+                GetGuildChannelListRequest(guild_id=_guild_id, refresh=refresh)
+            )
+        ).channels_info
+
+    @API
+    async def get_guild_meta_by_guest(
+        self,
+        *,
+        guild_id: Union[int, str, Contact],
+    ):
+        """获取频道信息
+
+        参数:
+            guild_id: 频道ID
+        """
+        if isinstance(guild_id, Contact):
+            if guild_id.type != SceneType.GUILD:
+                raise ValueError("Contact must be GUILD")
+            _guild_id = int(guild_id.id)
+        else:
+            _guild_id = int(guild_id)
+        return await self.service.guild.get_guild_meta_by_guest(GetGuildMetaByGuestRequest(guild_id=_guild_id))
+
+    @API
+    async def get_guild_member_list(
+        self,
+        *,
+        guild_id: Union[int, str, Contact],
+        next_token: Optional[str] = None,
+        all: bool = False,
+        refresh: bool = False,
+    ):
+        """获取频道成员列表
+
+        参数:
+            guild_id: 频道ID
+            next_token: 下一页标识
+            all: 是否一次性获取全部
+            refresh: 是否刷新
+        """
+        if isinstance(guild_id, Contact):
+            if guild_id.type != SceneType.GUILD:
+                raise ValueError("Contact must be GUILD")
+            _guild_id = int(guild_id.id)
+        else:
+            _guild_id = int(guild_id)
+        return await self.service.guild.get_guild_member_list(
+            GetGuildMemberListRequest(guild_id=_guild_id, next_token=next_token or "", all=all, refresh=refresh)
+        )
+
+    @API
+    async def get_guild_member(
+        self,
+        *,
+        guild_id: Union[int, str, Contact],
+        tiny_id: int,
+    ):
+        """获取频道成员
+
+        参数:
+            guild_id: 频道ID
+            tiny_id: 成员tinyId
+        """
+        if isinstance(guild_id, Contact):
+            if guild_id.type != SceneType.GUILD:
+                raise ValueError("Contact must be GUILD")
+            _guild_id = int(guild_id.id)
+        else:
+            _guild_id = int(guild_id)
+        return await self.service.guild.get_guild_member(GetGuildMemberRequest(guild_id=_guild_id, tiny_id=tiny_id))
+
+    @API
+    async def send_channel_message(
+        self,
+        *,
+        guild_id: int,
+        channel_id: int,
+        message: str,
+        recall_duration: int = 0,
+    ):
+        """发送频道消息
+
+        参数:
+            guild_id: 频道ID
+            channel_id: 子频道ID
+            message: 消息体
+            recall_duration: 自动撤回间隔
+        """
+        return await self.service.guild.send_channel_message(
+            SendChannelMessageRequest(
+                guild_id=guild_id, channel_id=channel_id, message=message, recall_duration=recall_duration
+            )
+        )
+
+    @API
+    async def get_guild_feed_list(
+        self,
+        *,
+        guild_id: Union[int, str, Contact],
+        from_: int,
+    ):
+        """获取频道帖子广场列表
+
+        参数:
+            guild_id: 频道ID
+            from_: 起始位置
+        """
+        if isinstance(guild_id, Contact):
+            if guild_id.type != SceneType.GUILD:
+                raise ValueError("Contact must be GUILD")
+            _guild_id = int(guild_id.id)
+        else:
+            _guild_id = int(guild_id)
+        return await self.service.guild.get_guild_feed_list(GetGuildFeedListRequest(guild_id=_guild_id, from_=from_))
+
+    @API
+    async def get_guild_role_list(
+        self,
+        *,
+        guild_id: Union[int, str, Contact],
+    ):
+        """获取频道身份组列表
+
+        参数:
+            guild_id: 频道ID
+        """
+        if isinstance(guild_id, Contact):
+            if guild_id.type != SceneType.GUILD:
+                raise ValueError("Contact must be GUILD")
+            _guild_id = int(guild_id.id)
+        else:
+            _guild_id = int(guild_id)
+        return (await self.service.guild.get_guild_role_list(GetGuildRoleListRequest(guild_id=_guild_id))).roles_info
+
+    @API
+    async def create_guild_role(
+        self,
+        *,
+        guild_id: Union[int, str, Contact],
+        name: str,
+        color: int,
+    ):
+        """创建频道身份组
+
+        参数:
+            guild_id: 频道ID
+            name: 身份组名
+            color: 颜色ARGB
+        """
+        if isinstance(guild_id, Contact):
+            if guild_id.type != SceneType.GUILD:
+                raise ValueError("Contact must be GUILD")
+            _guild_id = int(guild_id.id)
+        else:
+            _guild_id = int(guild_id)
+        return await self.service.guild.create_guild_role(
+            CreateGuildRoleRequest(guild_id=_guild_id, name=name, color=color)
+        )
+
+    @API
+    async def update_guild_role(
+        self,
+        *,
+        guild_id: Union[int, str, Contact],
+        role_id: int,
+        name: str,
+        color: int,
+    ):
+        """更新频道身份组
+
+        参数:
+            guild_id: 频道ID
+            role_id: 身份组ID
+            name: 身份组名
+            color: 颜色ARGB
+        """
+        if isinstance(guild_id, Contact):
+            if guild_id.type != SceneType.GUILD:
+                raise ValueError("Contact must be GUILD")
+            _guild_id = int(guild_id.id)
+        else:
+            _guild_id = int(guild_id)
+        return await self.service.guild.update_guild_role(
+            UpdateGuildRoleRequest(guild_id=_guild_id, role_id=role_id, name=name, color=color)
+        )
+
+    @API
+    async def delete_guild_role(
+        self,
+        *,
+        guild_id: Union[int, str, Contact],
+        role_id: int,
+    ):
+        """删除频道身份组
+
+        参数:
+            guild_id: 频道ID
+            role_id: 身份组ID
+        """
+        if isinstance(guild_id, Contact):
+            if guild_id.type != SceneType.GUILD:
+                raise ValueError("Contact must be GUILD")
+            _guild_id = int(guild_id.id)
+        else:
+            _guild_id = int(guild_id)
+        return await self.service.guild.delete_guild_role(DeleteGuildRoleRequest(guild_id=_guild_id, role_id=role_id))
+
+    @API
+    async def set_guild_member_role(
+        self,
+        *,
+        guild_id: Union[int, str, Contact],
+        role_id: int,
+        is_set: bool,
+        users: list[str],
+    ):
+        """设置频道成员身份
+
+        参数:
+            guild_id: 频道ID
+            role_id: 身份组ID
+            is_set: 是否设置
+            users: 用户tinyId列表
+        """
+        if isinstance(guild_id, Contact):
+            if guild_id.type != SceneType.GUILD:
+                raise ValueError("Contact must be GUILD")
+            _guild_id = int(guild_id.id)
+        else:
+            _guild_id = int(guild_id)
+        return await self.service.guild.set_guild_member_role(
+            SetGuildMemberRoleRequest(guild_id=_guild_id, role_id=role_id, set=is_set, tiny_ids=users)
+        )
+
+    @API
+    async def upload_image(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        url: Optional[str] = None,
+        path: Optional[Union[str, Path]] = None,
+        raw: Optional[Union[bytes, BytesIO]] = None,
+    ):
+        """上传图片
+
+        参数:
+            group_id: 群ID
+            url: 图片链接
+            path: 图片路径
+            raw: 图片二进制数据
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        if url:
+            args = {"file_url": url}
+        elif path:
+            file = Path(path).resolve().absolute()
+            args = {"file_path": str(file), "file_name": file.name}
+        elif raw:
+            args = {"file": raw if isinstance(raw, bytes) else raw.getvalue()}
+        else:
+            raise ValueError("No file provided")
+        return await self.service.developer.upload_image(UploadImageRequest(group_id=_group_id, **args))
+
+    @API
+    async def get_uid_by_uin(
+        self,
+        *,
+        target_uins: list[int],
+    ):
+        """获取UID
+
+        参数:
+            target_uins: UIN列表
+        """
+        return (await self.service.friend.get_uid_by_uin(GetUidRequest(target_uins=target_uins))).uid_map
+
+    @API
+    async def get_uin_by_uid(
+        self,
+        *,
+        target_uids: list[str],
+    ):
+        """获取UIN
+
+        参数:
+            target_uids: UID列表
+        """
+        return (await self.service.friend.get_uin_by_uid(GetUinByUidRequest(target_uids=target_uids))).uin_map
+
+    @API
+    async def get_friend_list(
+        self,
+        refresh: bool = False,
+    ):
+        """获取好友列表
+
+        参数:
+            refresh: 是否刷新
+        """
+        return (await self.service.friend.get_friend_list(GetFriendListRequest(refresh=refresh))).friends_info
+
+    @API
+    async def get_friend_profile_card(self, *, targets: Union[list[str], list[int], Contact, Sender]):
+        """获取好友名片
+
+        参数:
+            targets: UIN列表 或 UID列表
+        """
+        if isinstance(targets, Contact):
+            if targets.type != SceneType.FRIEND:
+                raise ValueError("Contact must be FRIEND")
+            args = {"target_uins": [int(targets.id)]}
+        elif isinstance(targets, Sender):
+            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+        else:
+            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+        return await self.service.friend.get_friend_profile_card(GetFriendProfileCardRequest(**args))
+
+    @API
+    async def get_stranger_profile_card(self, *, targets: Union[list[str], list[int], Contact, Sender]):
+        """获取陌生人名片
+
+        参数:
+            targets: UIN列表 或 UID列表
+        """
+        if isinstance(targets, Contact):
+            if targets.type not in (SceneType.STRANGER, SceneType.STRANGER_FROM_GROUP, SceneType.NEARBY):
+                raise ValueError("Contact must be STRANGER")
+            args = {"target_uins": [int(targets.id)]}
+        elif isinstance(targets, Sender):
+            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+        else:
+            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+        return await self.service.friend.get_stranger_profile_card(GetStrangerProfileCardRequest(**args))
+
+    @API
+    async def is_black_list_user(
+        self,
+        *,
+        targets: Union[list[str], list[int], Contact, Sender],
+    ):
+        """是否黑名单用户
+
+        参数:
+            targets: UIN列表 或 UID列表
+        """
+        if isinstance(targets, Contact):
+            if targets.type not in (
+                SceneType.FRIEND,
+                SceneType.STRANGER,
+                SceneType.STRANGER_FROM_GROUP,
+                SceneType.NEARBY,
+            ):
+                raise ValueError("Contact must be FRIEND")
+            target_uin = int(targets.id)
+            args = {"target_uins": [target_uin]}
+        elif isinstance(targets, Sender):
+            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+        else:
+            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+        return await self.service.friend.is_black_list_user(IsBlackListUserRequest(**args))
+
+    @API
+    async def set_profile_card(
+        self,
+        *,
+        nick_name: Optional[str] = None,
+        company: Optional[str] = None,
+        email: Optional[str] = None,
+        college: Optional[str] = None,
+        personal_note: Optional[str] = None,
+        birthday: Optional[int] = None,
+        age: Optional[int] = None,
+    ):
+        """设置个人名片
+
+        参数:
+            nick_name: 昵称
+            company: 公司
+            email: 邮箱
+            college: 学校
+            personal_note: 个性签名
+            birthday: 生日
+            age: 年龄
+        """
+        await self.service.friend.set_profile_card(
+            SetProfileCardRequest(
+                nick_name=nick_name,
+                company=company,
+                email=email,
+                college=college,
+                personal_note=personal_note,
+                birthday=birthday,
+                age=age,
+            )
+        )
+
+    @API
+    async def vote_user(
+        self,
+        *,
+        targets: Union[list[str], list[int], Contact, Sender],
+        vote_count: int = 1,
+    ):
+        """点赞用户
+
+        参数:
+            targets: UIN列表 或 UID列表
+            vote_count: 点赞数量
+        """
+        if isinstance(targets, Contact):
+            if targets.type not in (
+                SceneType.FRIEND,
+                SceneType.STRANGER,
+                SceneType.STRANGER_FROM_GROUP,
+                SceneType.NEARBY,
+            ):
+                raise ValueError("Contact must be FRIEND")
+            target_uin = int(targets.id)
+            args = {"target_uins": [target_uin]}
+        elif isinstance(targets, Sender):
+            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+        else:
+            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+        return await self.service.friend.vote_user(VoteUserRequest(**args, vote_count=vote_count))

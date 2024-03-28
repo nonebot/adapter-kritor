@@ -4,10 +4,7 @@
 # This file has been @generated
 
 from dataclasses import dataclass
-from typing import (
-    List,
-    Optional,
-)
+from typing import List, Optional
 
 import betterproto
 
@@ -75,9 +72,7 @@ class ResponseResponseCode(betterproto.Enum):
 class Contact(betterproto.Message):
     scene: "Scene" = betterproto.enum_field(1)
     peer: str = betterproto.string_field(2)
-    sub_peer: Optional[str] = betterproto.string_field(
-        3, optional=True, group="_sub_peer"
-    )
+    sub_peer: Optional[str] = betterproto.string_field(3, optional=True, group="_sub_peer")
 
 
 @dataclass(eq=False, repr=False)
@@ -154,15 +149,9 @@ class ImageElement(betterproto.Message):
     file_name: str = betterproto.string_field(2, group="data")
     file_path: str = betterproto.string_field(3, group="data")
     file_url: str = betterproto.string_field(4, group="data")
-    file_md5: Optional[str] = betterproto.string_field(
-        5, optional=True, group="_file_md5"
-    )
-    sub_type: Optional[int] = betterproto.uint32_field(
-        6, optional=True, group="_sub_type"
-    )
-    type: Optional["ImageElementImageType"] = betterproto.enum_field(
-        10, optional=True, group="_type"
-    )
+    file_md5: Optional[str] = betterproto.string_field(5, optional=True, group="_file_md5")
+    sub_type: Optional[int] = betterproto.uint32_field(6, optional=True, group="_sub_type")
+    type: Optional["ImageElementImageType"] = betterproto.enum_field(10, optional=True, group="_type")
 
 
 @dataclass(eq=False, repr=False)
@@ -171,9 +160,7 @@ class VoiceElement(betterproto.Message):
     file_name: str = betterproto.string_field(2, group="data")
     file_path: str = betterproto.string_field(3, group="data")
     file_url: str = betterproto.string_field(4, group="data")
-    file_md5: Optional[str] = betterproto.string_field(
-        5, optional=True, group="_file_md5"
-    )
+    file_md5: Optional[str] = betterproto.string_field(5, optional=True, group="_file_md5")
     magic: Optional[bool] = betterproto.bool_field(6, optional=True, group="_magic")
 
 
@@ -183,9 +170,7 @@ class VideoElement(betterproto.Message):
     file_name: str = betterproto.string_field(2, group="data")
     file_path: str = betterproto.string_field(3, group="data")
     file_url: str = betterproto.string_field(4, group="data")
-    file_md5: Optional[str] = betterproto.string_field(
-        5, optional=True, group="_file_md5"
-    )
+    file_md5: Optional[str] = betterproto.string_field(5, optional=True, group="_file_md5")
 
 
 @dataclass(eq=False, repr=False)
@@ -287,9 +272,7 @@ class XmlElement(betterproto.Message):
 class FileElement(betterproto.Message):
     name: Optional[str] = betterproto.string_field(1, optional=True, group="_name")
     size: Optional[int] = betterproto.uint64_field(2, optional=True, group="_size")
-    expire_time: Optional[int] = betterproto.uint64_field(
-        3, optional=True, group="_expire_time"
-    )
+    expire_time: Optional[int] = betterproto.uint64_field(3, optional=True, group="_expire_time")
     id: Optional[str] = betterproto.string_field(4, optional=True, group="_id")
     url: Optional[str] = betterproto.string_field(5, optional=True, group="_url")
     biz: Optional[int] = betterproto.int32_field(6, optional=True, group="_biz")

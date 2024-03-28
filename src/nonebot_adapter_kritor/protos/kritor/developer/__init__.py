@@ -4,22 +4,16 @@
 # This file has been @generated
 
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import TYPE_CHECKING, Dict, List, Optional
 
-import betterproto
 import grpclib
+import betterproto
 from betterproto.grpc.grpclib_server import ServiceBase
-
 
 if TYPE_CHECKING:
     import grpclib.server
-    from betterproto.grpc.grpclib_client import MetadataLike
     from grpclib.metadata import Deadline
+    from betterproto.grpc.grpclib_client import MetadataLike
 
 
 @dataclass(eq=False, repr=False)
@@ -88,9 +82,7 @@ class SendPacketRequest(betterproto.Message):
     command: str = betterproto.string_field(1)
     request_buffer: bytes = betterproto.bytes_field(2)
     is_protobuf: bool = betterproto.bool_field(3)
-    attrs: Dict[str, str] = betterproto.map_field(
-        4, betterproto.TYPE_STRING, betterproto.TYPE_STRING
-    )
+    attrs: Dict[str, str] = betterproto.map_field(4, betterproto.TYPE_STRING, betterproto.TYPE_STRING)
 
 
 @dataclass(eq=False, repr=False)
@@ -143,7 +135,7 @@ class DeveloperServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "ShellResponse":
         return await self._unary_unary(
             "/kritor.developer.DeveloperService/Shell",
@@ -160,7 +152,7 @@ class DeveloperServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetLogResponse":
         return await self._unary_unary(
             "/kritor.developer.DeveloperService/GetLog",
@@ -177,7 +169,7 @@ class DeveloperServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "ClearCacheResponse":
         return await self._unary_unary(
             "/kritor.developer.DeveloperService/ClearCache",
@@ -194,7 +186,7 @@ class DeveloperServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetDeviceBatteryResponse":
         return await self._unary_unary(
             "/kritor.developer.DeveloperService/GetDeviceBattery",
@@ -211,7 +203,7 @@ class DeveloperServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "UploadImageResponse":
         return await self._unary_unary(
             "/kritor.developer.DeveloperService/UploadImage",
@@ -228,7 +220,7 @@ class DeveloperServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "SendPacketResponse":
         return await self._unary_unary(
             "/kritor.developer.DeveloperService/SendPacket",
@@ -247,7 +239,7 @@ class QsignServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "SignResponse":
         return await self._unary_unary(
             "/kritor.developer.QsignService/Sign",
@@ -264,7 +256,7 @@ class QsignServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "EnergyResponse":
         return await self._unary_unary(
             "/kritor.developer.QsignService/Energy",
@@ -281,7 +273,7 @@ class QsignServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetCmdWhitelistResponse":
         return await self._unary_unary(
             "/kritor.developer.QsignService/GetCmdWhitelist",
@@ -301,9 +293,7 @@ class DeveloperServiceBase(ServiceBase):
     async def get_log(self, get_log_request: "GetLogRequest") -> "GetLogResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def clear_cache(
-        self, clear_cache_request: "ClearCacheRequest"
-    ) -> "ClearCacheResponse":
+    async def clear_cache(self, clear_cache_request: "ClearCacheRequest") -> "ClearCacheResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def get_device_battery(
@@ -311,33 +301,23 @@ class DeveloperServiceBase(ServiceBase):
     ) -> "GetDeviceBatteryResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def upload_image(
-        self, upload_image_request: "UploadImageRequest"
-    ) -> "UploadImageResponse":
+    async def upload_image(self, upload_image_request: "UploadImageRequest") -> "UploadImageResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def send_packet(
-        self, send_packet_request: "SendPacketRequest"
-    ) -> "SendPacketResponse":
+    async def send_packet(self, send_packet_request: "SendPacketRequest") -> "SendPacketResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_shell(
-        self, stream: "grpclib.server.Stream[ShellRequest, ShellResponse]"
-    ) -> None:
+    async def __rpc_shell(self, stream: "grpclib.server.Stream[ShellRequest, ShellResponse]") -> None:
         request = await stream.recv_message()
         response = await self.shell(request)
         await stream.send_message(response)
 
-    async def __rpc_get_log(
-        self, stream: "grpclib.server.Stream[GetLogRequest, GetLogResponse]"
-    ) -> None:
+    async def __rpc_get_log(self, stream: "grpclib.server.Stream[GetLogRequest, GetLogResponse]") -> None:
         request = await stream.recv_message()
         response = await self.get_log(request)
         await stream.send_message(response)
 
-    async def __rpc_clear_cache(
-        self, stream: "grpclib.server.Stream[ClearCacheRequest, ClearCacheResponse]"
-    ) -> None:
+    async def __rpc_clear_cache(self, stream: "grpclib.server.Stream[ClearCacheRequest, ClearCacheResponse]") -> None:
         request = await stream.recv_message()
         response = await self.clear_cache(request)
         await stream.send_message(response)
@@ -357,9 +337,7 @@ class DeveloperServiceBase(ServiceBase):
         response = await self.upload_image(request)
         await stream.send_message(response)
 
-    async def __rpc_send_packet(
-        self, stream: "grpclib.server.Stream[SendPacketRequest, SendPacketResponse]"
-    ) -> None:
+    async def __rpc_send_packet(self, stream: "grpclib.server.Stream[SendPacketRequest, SendPacketResponse]") -> None:
         request = await stream.recv_message()
         response = await self.send_packet(request)
         await stream.send_message(response)
@@ -413,21 +391,15 @@ class QsignServiceBase(ServiceBase):
     async def energy(self, energy_request: "EnergyRequest") -> "EnergyResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_cmd_whitelist(
-        self, get_cmd_whitelist_request: "GetCmdWhitelistRequest"
-    ) -> "GetCmdWhitelistResponse":
+    async def get_cmd_whitelist(self, get_cmd_whitelist_request: "GetCmdWhitelistRequest") -> "GetCmdWhitelistResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_sign(
-        self, stream: "grpclib.server.Stream[SignRequest, SignResponse]"
-    ) -> None:
+    async def __rpc_sign(self, stream: "grpclib.server.Stream[SignRequest, SignResponse]") -> None:
         request = await stream.recv_message()
         response = await self.sign(request)
         await stream.send_message(response)
 
-    async def __rpc_energy(
-        self, stream: "grpclib.server.Stream[EnergyRequest, EnergyResponse]"
-    ) -> None:
+    async def __rpc_energy(self, stream: "grpclib.server.Stream[EnergyRequest, EnergyResponse]") -> None:
         request = await stream.recv_message()
         response = await self.energy(request)
         await stream.send_message(response)

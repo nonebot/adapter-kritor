@@ -4,21 +4,16 @@
 # This file has been @generated
 
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    Optional,
-)
+from typing import TYPE_CHECKING, Dict, Optional
 
-import betterproto
 import grpclib
+import betterproto
 from betterproto.grpc.grpclib_server import ServiceBase
-
 
 if TYPE_CHECKING:
     import grpclib.server
-    from betterproto.grpc.grpclib_client import MetadataLike
     from grpclib.metadata import Deadline
+    from betterproto.grpc.grpclib_client import MetadataLike
 
 
 @dataclass(eq=False, repr=False)
@@ -71,7 +66,7 @@ class WebServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetCookiesResponse":
         return await self._unary_unary(
             "/kritor.web.WebService/GetCookies",
@@ -88,7 +83,7 @@ class WebServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetCredentialsResponse":
         return await self._unary_unary(
             "/kritor.web.WebService/GetCredentials",
@@ -105,7 +100,7 @@ class WebServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetCsrfTokenResponse":
         return await self._unary_unary(
             "/kritor.web.WebService/GetCSRFToken",
@@ -122,7 +117,7 @@ class WebServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetHttpCookiesResponse":
         return await self._unary_unary(
             "/kritor.web.WebService/GetHttpCookies",
@@ -136,29 +131,19 @@ class WebServiceStub(betterproto.ServiceStub):
 
 class WebServiceBase(ServiceBase):
 
-    async def get_cookies(
-        self, get_cookies_request: "GetCookiesRequest"
-    ) -> "GetCookiesResponse":
+    async def get_cookies(self, get_cookies_request: "GetCookiesRequest") -> "GetCookiesResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_credentials(
-        self, get_credentials_request: "GetCredentialsRequest"
-    ) -> "GetCredentialsResponse":
+    async def get_credentials(self, get_credentials_request: "GetCredentialsRequest") -> "GetCredentialsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_csrf_token(
-        self, get_csrf_token_request: "GetCsrfTokenRequest"
-    ) -> "GetCsrfTokenResponse":
+    async def get_csrf_token(self, get_csrf_token_request: "GetCsrfTokenRequest") -> "GetCsrfTokenResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_http_cookies(
-        self, get_http_cookies_request: "GetHttpCookiesRequest"
-    ) -> "GetHttpCookiesResponse":
+    async def get_http_cookies(self, get_http_cookies_request: "GetHttpCookiesRequest") -> "GetHttpCookiesResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_get_cookies(
-        self, stream: "grpclib.server.Stream[GetCookiesRequest, GetCookiesResponse]"
-    ) -> None:
+    async def __rpc_get_cookies(self, stream: "grpclib.server.Stream[GetCookiesRequest, GetCookiesResponse]") -> None:
         request = await stream.recv_message()
         response = await self.get_cookies(request)
         await stream.send_message(response)

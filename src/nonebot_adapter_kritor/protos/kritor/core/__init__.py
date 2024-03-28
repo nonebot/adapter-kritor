@@ -4,21 +4,16 @@
 # This file has been @generated
 
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    Optional,
-)
+from typing import TYPE_CHECKING, Dict, Optional
 
-import betterproto
 import grpclib
+import betterproto
 from betterproto.grpc.grpclib_server import ServiceBase
-
 
 if TYPE_CHECKING:
     import grpclib.server
-    from betterproto.grpc.grpclib_client import MetadataLike
     from grpclib.metadata import Deadline
+    from betterproto.grpc.grpclib_client import MetadataLike
 
 
 @dataclass(eq=False, repr=False)
@@ -36,18 +31,10 @@ class GetVersionResponse(betterproto.Message):
 class DownloadFileRequest(betterproto.Message):
     url: Optional[str] = betterproto.string_field(1, optional=True, group="_url")
     base64: Optional[str] = betterproto.string_field(2, optional=True, group="_base64")
-    root_path: Optional[str] = betterproto.string_field(
-        3, optional=True, group="_root_path"
-    )
-    file_name: Optional[str] = betterproto.string_field(
-        4, optional=True, group="_file_name"
-    )
-    thread_cnt: Optional[int] = betterproto.uint32_field(
-        5, optional=True, group="_thread_cnt"
-    )
-    headers: Optional[str] = betterproto.string_field(
-        6, optional=True, group="_headers"
-    )
+    root_path: Optional[str] = betterproto.string_field(3, optional=True, group="_root_path")
+    file_name: Optional[str] = betterproto.string_field(4, optional=True, group="_file_name")
+    thread_cnt: Optional[int] = betterproto.uint32_field(5, optional=True, group="_thread_cnt")
+    headers: Optional[str] = betterproto.string_field(6, optional=True, group="_headers")
 
 
 @dataclass(eq=False, repr=False)
@@ -87,7 +74,7 @@ class CoreServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetVersionResponse":
         return await self._unary_unary(
             "/kritor.core.CoreService/GetVersion",
@@ -104,7 +91,7 @@ class CoreServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "DownloadFileResponse":
         return await self._unary_unary(
             "/kritor.core.CoreService/DownloadFile",
@@ -121,7 +108,7 @@ class CoreServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetCurrentAccountResponse":
         return await self._unary_unary(
             "/kritor.core.CoreService/GetCurrentAccount",
@@ -138,7 +125,7 @@ class CoreServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "SwitchAccountResponse":
         return await self._unary_unary(
             "/kritor.core.CoreService/SwitchAccount",
@@ -152,14 +139,10 @@ class CoreServiceStub(betterproto.ServiceStub):
 
 class CoreServiceBase(ServiceBase):
 
-    async def get_version(
-        self, get_version_request: "GetVersionRequest"
-    ) -> "GetVersionResponse":
+    async def get_version(self, get_version_request: "GetVersionRequest") -> "GetVersionResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def download_file(
-        self, download_file_request: "DownloadFileRequest"
-    ) -> "DownloadFileResponse":
+    async def download_file(self, download_file_request: "DownloadFileRequest") -> "DownloadFileResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def get_current_account(
@@ -167,14 +150,10 @@ class CoreServiceBase(ServiceBase):
     ) -> "GetCurrentAccountResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def switch_account(
-        self, switch_account_request: "SwitchAccountRequest"
-    ) -> "SwitchAccountResponse":
+    async def switch_account(self, switch_account_request: "SwitchAccountRequest") -> "SwitchAccountResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_get_version(
-        self, stream: "grpclib.server.Stream[GetVersionRequest, GetVersionResponse]"
-    ) -> None:
+    async def __rpc_get_version(self, stream: "grpclib.server.Stream[GetVersionRequest, GetVersionResponse]") -> None:
         request = await stream.recv_message()
         response = await self.get_version(request)
         await stream.send_message(response)

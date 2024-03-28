@@ -4,22 +4,16 @@
 # This file has been @generated
 
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import TYPE_CHECKING, Dict, List, Optional
 
-import betterproto
 import grpclib
+import betterproto
 from betterproto.grpc.grpclib_server import ServiceBase
-
 
 if TYPE_CHECKING:
     import grpclib.server
-    from betterproto.grpc.grpclib_client import MetadataLike
     from grpclib.metadata import Deadline
+    from betterproto.grpc.grpclib_client import MetadataLike
 
 
 @dataclass(eq=False, repr=False)
@@ -112,9 +106,7 @@ class GetFileSystemInfoResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetFileListRequest(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    folder_id: Optional[str] = betterproto.string_field(
-        2, optional=True, group="_folder_id"
-    )
+    folder_id: Optional[str] = betterproto.string_field(2, optional=True, group="_folder_id")
 
 
 @dataclass(eq=False, repr=False)
@@ -130,7 +122,7 @@ class GroupFileServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "CreateFolderResponse":
         return await self._unary_unary(
             "/kritor.file.GroupFileService/CreateFolder",
@@ -147,7 +139,7 @@ class GroupFileServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "DeleteFolderResponse":
         return await self._unary_unary(
             "/kritor.file.GroupFileService/DeleteFolder",
@@ -164,7 +156,7 @@ class GroupFileServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "DeleteFileResponse":
         return await self._unary_unary(
             "/kritor.file.GroupFileService/DeleteFile",
@@ -181,7 +173,7 @@ class GroupFileServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "RenameFolderResponse":
         return await self._unary_unary(
             "/kritor.file.GroupFileService/RenameFolder",
@@ -198,7 +190,7 @@ class GroupFileServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetFileSystemInfoResponse":
         return await self._unary_unary(
             "/kritor.file.GroupFileService/GetFileSystemInfo",
@@ -215,7 +207,7 @@ class GroupFileServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetFileListResponse":
         return await self._unary_unary(
             "/kritor.file.GroupFileService/GetFileList",
@@ -229,24 +221,16 @@ class GroupFileServiceStub(betterproto.ServiceStub):
 
 class GroupFileServiceBase(ServiceBase):
 
-    async def create_folder(
-        self, create_folder_request: "CreateFolderRequest"
-    ) -> "CreateFolderResponse":
+    async def create_folder(self, create_folder_request: "CreateFolderRequest") -> "CreateFolderResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def delete_folder(
-        self, delete_folder_request: "DeleteFolderRequest"
-    ) -> "DeleteFolderResponse":
+    async def delete_folder(self, delete_folder_request: "DeleteFolderRequest") -> "DeleteFolderResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def delete_file(
-        self, delete_file_request: "DeleteFileRequest"
-    ) -> "DeleteFileResponse":
+    async def delete_file(self, delete_file_request: "DeleteFileRequest") -> "DeleteFileResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def rename_folder(
-        self, rename_folder_request: "RenameFolderRequest"
-    ) -> "RenameFolderResponse":
+    async def rename_folder(self, rename_folder_request: "RenameFolderRequest") -> "RenameFolderResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def get_file_system_info(
@@ -254,9 +238,7 @@ class GroupFileServiceBase(ServiceBase):
     ) -> "GetFileSystemInfoResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_file_list(
-        self, get_file_list_request: "GetFileListRequest"
-    ) -> "GetFileListResponse":
+    async def get_file_list(self, get_file_list_request: "GetFileListRequest") -> "GetFileListResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_create_folder(
@@ -273,9 +255,7 @@ class GroupFileServiceBase(ServiceBase):
         response = await self.delete_folder(request)
         await stream.send_message(response)
 
-    async def __rpc_delete_file(
-        self, stream: "grpclib.server.Stream[DeleteFileRequest, DeleteFileResponse]"
-    ) -> None:
+    async def __rpc_delete_file(self, stream: "grpclib.server.Stream[DeleteFileRequest, DeleteFileResponse]") -> None:
         request = await stream.recv_message()
         response = await self.delete_file(request)
         await stream.send_message(response)

@@ -15,3 +15,5 @@ class ClientInfo(BaseModel):
 class Config(BaseModel):
     kritor_clients: list[ClientInfo] = Field(default_factory=list)
     """client 配置"""
+    kritor_skip_auth: bool = False
+    """是否跳过认证"""

@@ -4,39 +4,28 @@
 # This file has been @generated
 
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    AsyncIterable,
-    AsyncIterator,
-    Dict,
-    Iterable,
-    Optional,
-    Union,
-)
+from typing import TYPE_CHECKING, Dict, Union, Iterable, Optional, AsyncIterable, AsyncIterator
 
-import betterproto
 import grpclib
+import betterproto
 from betterproto.grpc.grpclib_server import ServiceBase
 
 from .. import common as _common__
 
-
 if TYPE_CHECKING:
     import grpclib.server
-    from betterproto.grpc.grpclib_client import MetadataLike
     from grpclib.metadata import Deadline
+    from betterproto.grpc.grpclib_client import MetadataLike
 
 
 class ReverseServiceStub(betterproto.ServiceStub):
     async def reverse_stream(
         self,
-        common_response_iterator: Union[
-            AsyncIterable["_common__.Response"], Iterable["_common__.Response"]
-        ],
+        common_response_iterator: Union[AsyncIterable["_common__.Response"], Iterable["_common__.Response"]],
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> AsyncIterator["_common__.Request"]:
         async for response in self._stream_stream(
             "/kritor.reverse.ReverseService/ReverseStream",

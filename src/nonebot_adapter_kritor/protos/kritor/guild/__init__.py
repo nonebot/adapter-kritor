@@ -4,22 +4,16 @@
 # This file has been @generated
 
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import TYPE_CHECKING, Dict, List, Optional
 
-import betterproto
 import grpclib
+import betterproto
 from betterproto.grpc.grpclib_server import ServiceBase
-
 
 if TYPE_CHECKING:
     import grpclib.server
-    from betterproto.grpc.grpclib_client import MetadataLike
     from grpclib.metadata import Deadline
+    from betterproto.grpc.grpclib_client import MetadataLike
 
 
 @dataclass(eq=False, repr=False)
@@ -355,7 +349,7 @@ class GuildServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetBotInfoResponse":
         return await self._unary_unary(
             "/kritor.guild.GuildService/GetBotInfo",
@@ -372,7 +366,7 @@ class GuildServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetChannelListResponse":
         return await self._unary_unary(
             "/kritor.guild.GuildService/GetChannelList",
@@ -389,7 +383,7 @@ class GuildServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetGuildMetaByGuestResponse":
         return await self._unary_unary(
             "/kritor.guild.GuildService/GetGuildMetaByGuest",
@@ -406,7 +400,7 @@ class GuildServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetGuildChannelListResponse":
         return await self._unary_unary(
             "/kritor.guild.GuildService/GetGuildChannelList",
@@ -423,7 +417,7 @@ class GuildServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetGuildMemberListResponse":
         return await self._unary_unary(
             "/kritor.guild.GuildService/GetGuildMemberList",
@@ -440,7 +434,7 @@ class GuildServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetGuildMemberResponse":
         return await self._unary_unary(
             "/kritor.guild.GuildService/GetGuildMember",
@@ -457,7 +451,7 @@ class GuildServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "SendChannelMessageResponse":
         return await self._unary_unary(
             "/kritor.guild.GuildService/SendChannelMessage",
@@ -474,7 +468,7 @@ class GuildServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetGuildFeedListResponse":
         return await self._unary_unary(
             "/kritor.guild.GuildService/GetGuildFeedList",
@@ -491,7 +485,7 @@ class GuildServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "GetGuildRoleListResponse":
         return await self._unary_unary(
             "/kritor.guild.GuildService/GetGuildRoleList",
@@ -508,7 +502,7 @@ class GuildServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "DeleteGuildRoleResponse":
         return await self._unary_unary(
             "/kritor.guild.GuildService/DeleteGuildRole",
@@ -525,7 +519,7 @@ class GuildServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "SetGuildMemberRoleResponse":
         return await self._unary_unary(
             "/kritor.guild.GuildService/SetGuildMemberRole",
@@ -542,7 +536,7 @@ class GuildServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "UpdateGuildRoleResponse":
         return await self._unary_unary(
             "/kritor.guild.GuildService/UpdateGuildRole",
@@ -559,7 +553,7 @@ class GuildServiceStub(betterproto.ServiceStub):
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
+        metadata: Optional["MetadataLike"] = None,
     ) -> "CreateGuildRoleResponse":
         return await self._unary_unary(
             "/kritor.guild.GuildService/CreateGuildRole",
@@ -573,14 +567,10 @@ class GuildServiceStub(betterproto.ServiceStub):
 
 class GuildServiceBase(ServiceBase):
 
-    async def get_bot_info(
-        self, get_bot_info_request: "GetBotInfoRequest"
-    ) -> "GetBotInfoResponse":
+    async def get_bot_info(self, get_bot_info_request: "GetBotInfoRequest") -> "GetBotInfoResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_channel_list(
-        self, get_channel_list_request: "GetChannelListRequest"
-    ) -> "GetChannelListResponse":
+    async def get_channel_list(self, get_channel_list_request: "GetChannelListRequest") -> "GetChannelListResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def get_guild_meta_by_guest(
@@ -598,9 +588,7 @@ class GuildServiceBase(ServiceBase):
     ) -> "GetGuildMemberListResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_guild_member(
-        self, get_guild_member_request: "GetGuildMemberRequest"
-    ) -> "GetGuildMemberResponse":
+    async def get_guild_member(self, get_guild_member_request: "GetGuildMemberRequest") -> "GetGuildMemberResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def send_channel_message(
@@ -618,9 +606,7 @@ class GuildServiceBase(ServiceBase):
     ) -> "GetGuildRoleListResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def delete_guild_role(
-        self, delete_guild_role_request: "DeleteGuildRoleRequest"
-    ) -> "DeleteGuildRoleResponse":
+    async def delete_guild_role(self, delete_guild_role_request: "DeleteGuildRoleRequest") -> "DeleteGuildRoleResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def set_guild_member_role(
@@ -628,19 +614,13 @@ class GuildServiceBase(ServiceBase):
     ) -> "SetGuildMemberRoleResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def update_guild_role(
-        self, update_guild_role_request: "UpdateGuildRoleRequest"
-    ) -> "UpdateGuildRoleResponse":
+    async def update_guild_role(self, update_guild_role_request: "UpdateGuildRoleRequest") -> "UpdateGuildRoleResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def create_guild_role(
-        self, create_guild_role_request: "CreateGuildRoleRequest"
-    ) -> "CreateGuildRoleResponse":
+    async def create_guild_role(self, create_guild_role_request: "CreateGuildRoleRequest") -> "CreateGuildRoleResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_get_bot_info(
-        self, stream: "grpclib.server.Stream[GetBotInfoRequest, GetBotInfoResponse]"
-    ) -> None:
+    async def __rpc_get_bot_info(self, stream: "grpclib.server.Stream[GetBotInfoRequest, GetBotInfoResponse]") -> None:
         request = await stream.recv_message()
         response = await self.get_bot_info(request)
         await stream.send_message(response)

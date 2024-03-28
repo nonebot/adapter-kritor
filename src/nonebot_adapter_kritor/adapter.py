@@ -18,6 +18,7 @@ from .protos.kritor.event import EventType, EventServiceStub, RequestPushEvent
 from .protos.kritor.authentication import (
     AuthenticateRequest,
     AuthenticationServiceStub,
+    GetAuthenticationStateRequest,
     AuthenticateResponseAuthenticateResponseCode,
 )
 
@@ -99,18 +100,20 @@ class Adapter(BaseAdapter):
         channel = Channel(info.host, info.port)
         async with channel:
             auth = AuthenticationServiceStub(channel)
-            request = AuthenticateRequest(account=info.account, ticket=info.ticket)
-            response = await auth.authenticate(request)
-            if response.code != AuthenticateResponseAuthenticateResponseCode.OK:
-                log(
-                    "ERROR",
-                    f"<r><bg #f8bbd0>Account {info.account} authenticate failed\n"
-                    f"Error code: {response.code}"
-                    f"Error message: {response.msg}</bg #f8bbd0></r>",
-                )
-                return
+            if not self.kritor_config.kritor_skip_auth:
+                request = AuthenticateRequest(account=info.account, ticket=info.ticket)
+                response = await auth.authenticate(request)
+                if response.code != AuthenticateResponseAuthenticateResponseCode.OK:
+                    log(
+                        "ERROR",
+                        f"<r><bg #f8bbd0>Account {info.account} authenticate failed\n"
+                        f"Error code: {response.code}"
+                        f"Error message: {response.msg}</bg #f8bbd0></r>",
+                    )
+                    return
+            state = await auth.get_authentication_state(GetAuthenticationStateRequest(account=info.account))
             log("INFO", f"<y>Account {info.account} authenticate success</y>")
-            bot = Bot(self, info.account, info, channel)
+            bot = Bot(self, info.account, info, channel, state.is_required)
             self.bot_connect(bot)
             event = EventServiceStub(channel)
             listens = [
