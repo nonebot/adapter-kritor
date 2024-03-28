@@ -35,7 +35,7 @@ extra_standard_library = ["typing_extensions"]
 [tool.ruff]
 line-length = 120
 target-version = "py39"
-exclude = ["src/nonebot_adapter_kritor/protos/"]
+exclude = ["src/nonebot/adapter/kritor/protos/"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "UP", "C", "T", "PYI", "PT", "Q"]
@@ -62,8 +62,8 @@ dev = [
 ]
 
 [tool.pdm.build]
-includes = ["src/nonebot_adapter_kritor"]
+includes = ["src/nonebot"]
 
 [tool.pdm.scripts]
-format = { composite = ["isort ./src/nonebot_adapter_kritor/ ./tests/","black ./src/nonebot_adapter_kritor/ ./tests/","ruff check ./src/nonebot_adapter_kritor/ ./tests/"] }
-compile = "python -m grpc_tools.protoc -I ./src/kritor/protos --python_betterproto_out=./src/nonebot_adapter_kritor/protos ./src/kritor/protos/auth/*.proto ./src/kritor/protos/common/*.proto ./src/kritor/protos/core/core.proto ./src/kritor/protos/customization/customization.proto ./src/kritor/protos/developer/*.proto ./src/kritor/protos/event/*.proto ./src/kritor/protos/file/*.proto ./src/kritor/protos/friend/*.proto ./src/kritor/protos/group/*.proto ./src/kritor/protos/guild/*.proto ./src/kritor/protos/message/message.proto ./src/kritor/protos/reverse/reverse.proto ./src/kritor/protos/web/web.proto"
+format = { composite = ["isort ./src/nonebot/adapter/kritor/ ./tests/","black ./src/nonebot/adapter/kritor/ ./tests/","ruff check ./src/nonebot/adapter/kritor/ ./tests/"] }
+compile = "python -m grpc_tools.protoc -I ./src/kritor/protos --python_betterproto_out=./src/nonebot/adapter/kritor/protos ./src/kritor/protos/auth/*.proto ./src/kritor/protos/common/*.proto ./src/kritor/protos/core/core.proto ./src/kritor/protos/customization/customization.proto ./src/kritor/protos/developer/*.proto ./src/kritor/protos/event/*.proto ./src/kritor/protos/file/*.proto ./src/kritor/protos/friend/*.proto ./src/kritor/protos/group/*.proto ./src/kritor/protos/guild/*.proto ./src/kritor/protos/message/message.proto ./src/kritor/protos/reverse/reverse.proto ./src/kritor/protos/web/web.proto"
