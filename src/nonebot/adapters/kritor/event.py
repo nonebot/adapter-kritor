@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Union, Literal, Optional
 from pydantic import Field
 from nonebot.utils import escape_tag
 from nonebot.compat import model_dump
+
 from nonebot.adapters import Event as BaseEvent
 
 from .bot import Bot

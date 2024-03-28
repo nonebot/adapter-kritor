@@ -6,6 +6,7 @@ from typing_extensions import NotRequired, override
 from typing import Union, Literal, ClassVar, Optional, TypedDict
 
 from betterproto import Casing, which_one_of
+
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
 

@@ -7,8 +7,9 @@ from typing import TYPE_CHECKING, Union, Optional
 from betterproto import Casing
 from grpclib.client import Channel
 from nonebot.message import handle_event
-from nonebot.adapters import Bot as BaseBot
 from nonebot.compat import type_validate_python
+
+from nonebot.adapters import Bot as BaseBot
 
 from .utils import API, log
 from .config import ClientInfo

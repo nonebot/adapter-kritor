@@ -4,9 +4,10 @@ from typing_extensions import override
 
 from grpclib.client import Channel
 from nonebot.drivers import Driver
-from nonebot import get_plugin_config
 from betterproto import Casing, which_one_of
 from nonebot.compat import type_validate_python
+
+from nonebot import get_plugin_config
 from nonebot.adapters import Adapter as BaseAdapter
 
 from .bot import Bot
