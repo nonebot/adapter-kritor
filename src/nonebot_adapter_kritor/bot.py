@@ -256,6 +256,108 @@ class Bot(BaseBot):
             _check_nickname(self, event)
         await handle_event(self, event)
 
+    @API
+    async def get_version(self):
+        """获取协议端的 Kritor 版本信息"""
+        return await self.service.core.get_version(GetVersionRequest())
+
+    @API
+    async def clear_cache(self):
+        """清除缓存"""
+        return await self.service.developer.clear_cache(ClearCacheRequest())
+
+    @API
+    async def download_file(
+        self,
+        *,
+        url: Optional[str] = None,
+        base64: Optional[str] = None,
+        root_path: Optional[str] = None,
+        file_name: Optional[str] = None,
+        thread_cnt: Optional[int] = None,
+        headers: Optional[Union[str, dict[str, str]]] = None,
+    ):
+        """请求Kritor端下载文件
+
+        参数:
+            url: 下载文件的URL 二选一
+            base64: 下载文件的base64 二选一
+            root_path: 下载文件的根目录 需要保证Kritor有该目录访问权限，否则会报错 可选
+            file_name: 保存的文件名称 默认为文件MD5 可选
+            thread_cnt: 下载文件的线程数 默认为3 可选
+            headers: 下载文件的请求头 可选
+        """
+        if isinstance(headers, dict):
+            _headers = "[\r\n]".join([f"{k}={v}" for k, v in headers.items()])
+        else:
+            _headers = headers
+        return await self.service.core.download_file(
+            DownloadFileRequest(
+                url=url,
+                base64=base64,
+                root_path=root_path,
+                file_name=file_name,
+                thread_cnt=thread_cnt,
+                headers=_headers,
+            )
+        )
+
+    @API
+    async def get_current_account(self):
+        """获取当前账号信息"""
+        return await self.service.core.get_current_account(GetCurrentAccountRequest())
+
+    @API
+    async def switch_account(
+        self,
+        *,
+        account: Union[str, int],
+        super_ticket: str,
+    ) -> None:
+        """切换账号
+
+        参数:
+            account: 账号
+            super_ticket: 超级票据
+        """
+        args = {"account_uid" if isinstance(account, str) else "account_uin": account}
+        await self.service.core.switch_account(SwitchAccountRequest(**args, super_ticket=super_ticket))
+
+    @API
+    async def get_device_battery(self):
+        """获取设备电量"""
+        return await self.service.developer.get_device_battery(GetDeviceBatteryRequest())
+
+    @API
+    async def shell(
+        self,
+        *,
+        command: str,
+        directory: Optional[str] = None,
+    ):
+        """让协议端执行shell命令
+
+        参数:
+            command: shell命令
+            directory: 执行目录 可选
+        """
+        return await self.service.developer.shell(ShellRequest(command=command, directory=directory))
+
+    @API
+    async def get_log(
+        self,
+        *,
+        start: int,
+        recent: bool = True,
+    ):
+        """获取日志
+
+        参数:
+            start: 起始位置
+            recent: 是否获取最新日志
+        """
+        return await self.service.developer.get_log(GetLogRequest(start=start, recent=recent))
+
     @override
     async def send(
         self,
@@ -1176,3 +1278,401 @@ class Bot(BaseBot):
         else:
             args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
         return await self.service.friend.vote_user(VoteUserRequest(**args, vote_count=vote_count))
+
+    @API
+    async def get_group_info(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+    ):
+        """获取群信息
+
+        参数:
+            group_id: 群ID
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            group_id = int(group_id.id)
+        return (await self.service.group.get_group_info(GetGroupInfoRequest(group_id=group_id))).group_info
+
+    @API
+    async def get_group_list(
+        self,
+    ):
+        """获取群列表"""
+
+        return (await self.service.group.get_group_list(GetGroupListRequest())).groups_info
+
+    @API
+    async def get_group_member_info(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        targets: Union[list[str], list[int], Sender],
+        refresh: bool = False,
+    ):
+        """获取群成员信息
+
+        参数:
+            group_id: 群ID
+            targets: UIN列表 或 UID列表
+            refresh: 是否刷新
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            group_id = int(group_id.id)
+        if isinstance(targets, Sender):
+            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+        else:
+            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+        return (
+            await self.service.group.get_group_member_info(
+                GetGroupMemberInfoRequest(group_id=group_id, **args, refresh=refresh)
+            )
+        ).group_member_info
+
+    @API
+    async def get_group_member_list(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        refresh: bool = False,
+    ):
+        """获取群成员列表
+
+        参数:
+            group_id: 群ID
+            refresh: 是否刷新
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            group_id = int(group_id.id)
+        return (
+            await self.service.group.get_group_member_list(
+                GetGroupMemberListRequest(group_id=group_id, refresh=refresh)
+            )
+        ).group_members_info
+
+    @API
+    async def get_group_prohibited_user_list(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+    ):
+        """获取群被禁言用户列表
+
+        参数:
+            group_id: 群ID
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            group_id = int(group_id.id)
+        return (
+            await self.service.group.get_prohibited_user_list(GetProhibitedUserListRequest(group_id=group_id))
+        ).prohibited_users_info
+
+    @API
+    async def ban_member(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        targets: Union[list[str], list[int], Sender],
+        duration: int = 0,
+    ) -> None:
+        """禁言成员
+
+        参数:
+            group_id: 群ID
+            targets: UIN列表 或 UID列表
+            duration: 禁言时长, 0为解除禁言
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        if isinstance(targets, Sender):
+            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+        else:
+            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+        await self.service.group.ban_member(BanMemberRequest(group_id=_group_id, **args, duration=duration))
+
+    @API
+    async def nudge_member(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        targets: Union[list[str], list[int], Sender],
+    ) -> None:
+        """双击成员头像
+
+        参数:
+            group_id: 群ID
+            targets: UIN列表 或 UID列表
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        if isinstance(targets, Sender):
+            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+        else:
+            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+        await self.service.group.poke_member(PokeMemberRequest(group_id=_group_id, **args))
+
+    @API
+    async def kick_member(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        targets: Union[list[str], list[int], Sender],
+        reject_add_request: bool = False,
+        reason: Optional[str] = None,
+    ) -> None:
+        """踢出成员
+
+        参数:
+            group_id: 群ID
+            targets: UIN列表 或 UID列表
+            reject_add_request: 是否拒绝再次加群
+            reason: 踢出原因
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        if isinstance(targets, Sender):
+            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+        else:
+            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+        await self.service.group.kick_member(
+            KickMemberRequest(group_id=_group_id, **args, reject_add_request=reject_add_request, kick_reason=reason)
+        )
+
+    @API
+    async def leave_group(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+    ) -> None:
+        """机器人主动退群
+
+        参数:
+            group_id: 群ID
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        await self.service.group.leave_group(LeaveGroupRequest(group_id=_group_id))
+
+    @API
+    async def modify_member_card(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        targets: Union[list[str], list[int], Sender],
+        card: str,
+    ) -> None:
+        """修改群名片
+
+        参数:
+            group_id: 群ID
+            targets: UIN列表 或 UID列表
+            card: 新的群名片
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        if isinstance(targets, Sender):
+            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+        else:
+            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+        await self.service.group.modify_member_card(ModifyMemberCardRequest(group_id=_group_id, **args, card=card))
+
+    @API
+    async def modify_group_name(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        name: str,
+    ) -> None:
+        """修改群名称
+
+        参数:
+            group_id: 群ID
+            name: 新的群名称
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        await self.service.group.modify_group_name(ModifyGroupNameRequest(group_id=_group_id, group_name=name))
+
+    @API
+    async def modify_group_remark(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        remark: str,
+    ) -> None:
+        """修改群备注
+
+        参数:
+            group_id: 群ID
+            remark: 新的群备注
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        await self.service.group.modify_group_remark(ModifyGroupRemarkRequest(group_id=_group_id, remark=remark))
+
+    @API
+    async def set_group_admin(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        targets: Union[list[str], list[int], Sender],
+        is_set: bool,
+    ) -> None:
+        """设置管理员
+
+        参数:
+            group_id: 群ID
+            targets: UIN列表 或 UID列表
+            is_set: 是否设置为管理员
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        if isinstance(targets, Sender):
+            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+        else:
+            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+        await self.service.group.set_group_admin(SetGroupAdminRequest(group_id=_group_id, **args, is_admin=is_set))
+
+    @API
+    async def set_group_unique_title(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        targets: Union[list[str], list[int], Sender],
+        title: str,
+    ) -> None:
+        """设置专属头衔
+
+        参数:
+            group_id: 群ID
+            targets: UIN列表 或 UID列表
+            title: 新的群头衔
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        if isinstance(targets, Sender):
+            args = {"target_uins": [targets.uin]} if targets.uin else {"target_uids": [targets.uid]}
+        else:
+            args = {"target_uins": targets} if isinstance(targets[0], int) else {"target_uids": targets}
+        await self.service.group.set_group_unique_title(
+            SetGroupUniqueTitleRequest(group_id=_group_id, **args, unique_title=title)
+        )
+
+    @API
+    async def set_group_whole_ban(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        is_ban: bool,
+    ) -> None:
+        """全员禁言
+
+        参数:
+            group_id: 群ID
+            is_ban: 是否全员禁言
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            group_id = int(group_id.id)
+        await self.service.group.set_group_whole_ban(SetGroupWholeBanRequest(group_id=group_id, is_ban=is_ban))
+
+    @API
+    async def get_remain_count_at_all(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+    ):
+        """获取剩余全体@次数
+
+        参数:
+            group_id: 群ID
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            group_id = int(group_id.id)
+        return await self.service.group.get_remain_count_at_all(GetRemainCountAtAllRequest(group_id=group_id))
+
+    @API
+    async def get_not_joined_group_info(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+    ):
+        """获取未加入群信息
+
+        参数:
+            group_id: 群ID
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            group_id = int(group_id.id)
+        return (
+            await self.service.group.get_not_joined_group_info(GetNotJoinedGroupInfoRequest(group_id=group_id))
+        ).group_info
+
+    @API
+    async def get_group_honor(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        refresh: bool = False,
+    ):
+        """获取群荣誉信息
+
+        参数:
+            group_id: 群ID
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            group_id = int(group_id.id)
+        return (
+            await self.service.group.get_group_honor(GetGroupHonorRequest(group_id=group_id, refresh=refresh))
+        ).honor_info

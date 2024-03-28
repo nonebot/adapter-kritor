@@ -394,7 +394,7 @@ class GroupUniqueTitleChangedNotice(NoticeEvent):
         return f"{self.group_id}_{self.target}"
 
 
-class GroupEssenceMessaegNotice(NoticeEvent):
+class GroupEssenceMessageNotice(NoticeEvent):
     __type__: Literal["group_essence_changed"] = "group_essence_changed"
 
     group_id: int
@@ -542,9 +542,9 @@ class GroupAdminChangedNotice(NoticeEvent):
     @override
     def get_event_description(self) -> str:
         text = (
-            (f"Group {self.group_id} {self.target_uid or self.target_uin} become admin")
+            f"Group {self.group_id} {self.target_uid or self.target_uin} become admin"
             if self.is_admin
-            else (f"Group {self.group_id} {self.target_uid or self.target_uin} lose admin")
+            else f"Group {self.group_id} {self.target_uid or self.target_uin} lose admin"
         )
         return escape_tag(text)
 
@@ -660,9 +660,9 @@ class GroupWholeBanNotice(NoticeEvent):
     @override
     def get_event_description(self) -> str:
         text = (
-            (f"Group {self.group_id} {self.operator_uid or self.operator_uin} whole banned")
+            f"Group {self.group_id} {self.operator_uid or self.operator_uin} whole banned"
             if self.is_ban
-            else (f"Group {self.group_id} {self.operator_uid or self.operator_uin} whole unbanned")
+            else f"Group {self.group_id} {self.operator_uid or self.operator_uin} whole unbanned"
         )
         return escape_tag(text)
 
@@ -747,7 +747,7 @@ NoticeEventType = Union[
         FriendPokeNotice,
         FriendRecallNotice,
         GroupUniqueTitleChangedNotice,
-        GroupEssenceMessaegNotice,
+        GroupEssenceMessageNotice,
         GroupPokeNotice,
         GroupCardChangedNotice,
         GroupMemberIncreasedNotice,

@@ -32,6 +32,7 @@ class Adapter(BaseAdapter):
         # 读取适配器所需的配置项
         self.kritor_config: Config = get_plugin_config(Config)
         self.tasks: list[asyncio.Task] = []  # 存储 连接 任务
+        self._ref_tasks = set()
         self.setup()
 
     @classmethod
@@ -65,7 +66,9 @@ class Adapter(BaseAdapter):
             log("DEBUG", f"Received message event: {event.message}")
             message = event.message
             event = type_validate_python(MessageEventType, message.to_pydict(casing=Casing.SNAKE))  # type: ignore
-            asyncio.create_task(bot.handle_event(event))
+            task = asyncio.create_task(bot.handle_event(event))
+            self._ref_tasks.add(task)
+            task.add_done_callback(self._ref_tasks.discard)
 
     async def _listen_notice(self, bot: Bot, service: EventServiceStub):
         async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_NOTICE)):
@@ -77,7 +80,9 @@ class Adapter(BaseAdapter):
                 **notice[1].to_pydict(casing=Casing.SNAKE),  # type: ignore
             }
             event = type_validate_python(RequestEventType, data)
-            asyncio.create_task(bot.handle_event(event))
+            task = asyncio.create_task(bot.handle_event(event))
+            self._ref_tasks.add(task)
+            task.add_done_callback(self._ref_tasks.discard)
 
     async def _listen_request(self, bot: Bot, service: EventServiceStub):
         async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_REQUEST)):
@@ -90,7 +95,9 @@ class Adapter(BaseAdapter):
             }
             event = type_validate_python(NoticeEventType, data)
             event.check_tome(bot)
-            asyncio.create_task(bot.handle_event(event))
+            task = asyncio.create_task(bot.handle_event(event))
+            self._ref_tasks.add(task)
+            task.add_done_callback(self._ref_tasks.discard)
 
     async def _listen_core(self, bot: Bot, service: EventServiceStub):
         async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_CORE_EVENT)):
