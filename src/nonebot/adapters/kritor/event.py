@@ -8,8 +8,7 @@ from nonebot.utils import escape_tag
 from nonebot.compat import model_dump
 from nonebot.adapters import Event as BaseEvent
 
-from nonebot.adapters.kritor.bot import Bot
-
+from .bot import Bot
 from .compat import model_validator
 from .message import Reply, Message
 from .model import Group, Guild, Friend, Nearby, Sender, Stranger, ContactType, StrangerFromGroup

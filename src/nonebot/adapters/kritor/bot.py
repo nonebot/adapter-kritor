@@ -320,7 +320,7 @@ class Bot(BaseBot):
             account: 账号
             super_ticket: 超级票据
         """
-        args = {"account_uid" if isinstance(account, str) else "account_uin": account}
+        args = {"account_uin": account} if isinstance(account, int) else {"account_uid": account}
         await self.service.core.switch_account(SwitchAccountRequest(**args, super_ticket=super_ticket))
 
     @API
@@ -333,13 +333,13 @@ class Bot(BaseBot):
         self,
         *,
         command: str,
-        directory: Optional[str] = None,
+        directory: str,
     ):
         """让协议端执行shell命令
 
         参数:
             command: shell命令
-            directory: 执行目录 可选
+            directory: 执行目录
         """
         return await self.service.developer.shell(ShellRequest(command=command, directory=directory))
 
@@ -368,12 +368,13 @@ class Bot(BaseBot):
         if not isinstance(event, MessageEvent):
             raise RuntimeError("Event cannot be replied to!")
         if event.contact.type == SceneType.GUILD:
-            return await self.send_channel_message(
+            resp = await self.send_channel_message(
                 guild_id=int(event.contact.id),
                 channel_id=int(event.contact.sub_id or "0"),
                 message=str(message),
                 **kwargs,
             )
+            return SendMessageResponse(message_id=resp.message_id, message_time=resp.time)
         if isinstance(message, str):
             message = Message(message)
         elif isinstance(message, MessageSegment):
@@ -1675,4 +1676,4 @@ class Bot(BaseBot):
             group_id = int(group_id.id)
         return (
             await self.service.group.get_group_honor(GetGroupHonorRequest(group_id=group_id, refresh=refresh))
-        ).honor_info
+        ).group_honors_info
