@@ -33,6 +33,7 @@ from .protos.kritor.developer import (
     GetDeviceBatteryRequest,
 )
 from .protos.kritor.file import (
+    UploadFileRequest,
     DeleteFileRequest,
     GetFileListRequest,
     CreateFolderRequest,
@@ -42,7 +43,7 @@ from .protos.kritor.file import (
     GetFileSystemInfoRequest,
 )
 from .protos.kritor.friend import (
-    GetUidRequest,
+    GetUidByUinRequest,
     VoteUserRequest,
     FriendServiceStub,
     GetUinByUidRequest,
@@ -491,7 +492,7 @@ class Bot(BaseBot):
         contact: Contact,
         message_id: str,
         emoji: int,
-        is_comment: bool = True,
+        is_set: bool = True,
     ):
         """给消息评论表情
 
@@ -499,12 +500,12 @@ class Bot(BaseBot):
             contact: 要发送的目标
             message_id: 消息ID
             emoji: 表情
-            is_comment: 是否评论, False为撤销评论
+            is_set: 是否评论, False为撤销评论
         """
 
         return await self.service.message.react_message_with_emoji(
             ReactMessageWithEmojiRequest(
-                contact=contact.dump(), message_id=message_id, face_id=emoji, is_comment=is_comment
+                contact=contact.dump(), message_id=message_id, face_id=emoji, is_set=is_set
             )
         )
 
@@ -701,6 +702,40 @@ class Bot(BaseBot):
         else:
             _group_id = int(group_id)
         return await self.service.file.delete_folder(DeleteFolderRequest(group_id=_group_id, folder_id=folder_id))
+
+    @API
+    async def upload_file(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        url: Optional[str] = None,
+        path: Optional[Union[str, Path]] = None,
+        raw: Optional[Union[bytes, BytesIO]] = None,
+    ):
+        """上传文件
+
+        参数:
+            group_id: 群ID
+            url: 图片链接
+            path: 图片路径
+            raw: 图片二进制数据
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = int(group_id.id)
+        else:
+            _group_id = int(group_id)
+        if url:
+            args = {"file_url": url, "group_id": _group_id}
+        elif path:
+            file = Path(path).resolve().absolute()
+            args = {"file_path": str(file), "file_name": file.name, "group_id": _group_id}
+        elif raw:
+            args = {"file": raw if isinstance(raw, bytes) else raw.getvalue(), "group_id": _group_id}
+        else:
+            raise ValueError("No file provided")
+        return await self.service.file.upload_file(UploadFileRequest().from_pydict(args))
 
     @API
     async def delete_file(
@@ -1133,7 +1168,7 @@ class Bot(BaseBot):
         参数:
             target_uins: UIN列表
         """
-        return (await self.service.friend.get_uid_by_uin(GetUidRequest(target_uins=target_uins))).uid_map
+        return (await self.service.friend.get_uid_by_uin(GetUidByUinRequest(target_uins=target_uins))).uid_map
 
     @API
     async def get_uin_by_uid(

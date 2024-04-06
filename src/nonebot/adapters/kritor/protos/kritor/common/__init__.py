@@ -45,7 +45,7 @@ class ElementElementType(betterproto.Enum):
     XML = 21
     FILE = 22
     MARKDOWN = 23
-    BUTTON = 24
+    KEYBOARD = 24
 
 
 class ImageElementImageType(betterproto.Enum):
@@ -111,7 +111,7 @@ class Element(betterproto.Message):
     xml: "XmlElement" = betterproto.message_field(23, group="data")
     file: "FileElement" = betterproto.message_field(24, group="data")
     markdown: "MarkdownElement" = betterproto.message_field(25, group="data")
-    button: "ButtonElement" = betterproto.message_field(26, group="data")
+    keyboard: "KeyboardElement" = betterproto.message_field(26, group="data")
 
 
 @dataclass(eq=False, repr=False)
@@ -316,13 +316,13 @@ class Button(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
-class ButtonRow(betterproto.Message):
+class KeyboardRow(betterproto.Message):
     buttons: List["Button"] = betterproto.message_field(1)
 
 
 @dataclass(eq=False, repr=False)
-class ButtonElement(betterproto.Message):
-    rows: List["ButtonRow"] = betterproto.message_field(1)
+class KeyboardElement(betterproto.Message):
+    rows: List["KeyboardRow"] = betterproto.message_field(1)
     bot_appid: int = betterproto.uint64_field(2)
 
 

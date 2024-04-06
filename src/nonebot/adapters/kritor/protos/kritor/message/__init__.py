@@ -70,7 +70,7 @@ class ReactMessageWithEmojiRequest(betterproto.Message):
     contact: "_common__.Contact" = betterproto.message_field(1)
     message_id: str = betterproto.string_field(2)
     face_id: int = betterproto.uint32_field(3)
-    is_comment: bool = betterproto.bool_field(4)
+    is_set: bool = betterproto.bool_field(4)
 
 
 @dataclass(eq=False, repr=False)
@@ -147,17 +147,6 @@ class DownloadForwardMessageResponse(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
-class DeleteEssenceMessageRequest(betterproto.Message):
-    group_id: int = betterproto.uint64_field(1)
-    message_id: str = betterproto.string_field(2)
-
-
-@dataclass(eq=False, repr=False)
-class DeleteEssenceMessageResponse(betterproto.Message):
-    pass
-
-
-@dataclass(eq=False, repr=False)
 class GetEssenceMessageListRequest(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
     page: int = betterproto.uint32_field(2)
@@ -177,6 +166,17 @@ class SetEssenceMessageRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class SetEssenceMessageResponse(betterproto.Message):
+    pass
+
+
+@dataclass(eq=False, repr=False)
+class DeleteEssenceMessageRequest(betterproto.Message):
+    group_id: int = betterproto.uint64_field(1)
+    message_id: str = betterproto.string_field(2)
+
+
+@dataclass(eq=False, repr=False)
+class DeleteEssenceMessageResponse(betterproto.Message):
     pass
 
 
@@ -368,23 +368,6 @@ class MessageServiceStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
-    async def delete_essence_message(
-        self,
-        delete_essence_message_request: "DeleteEssenceMessageRequest",
-        *,
-        timeout: Optional[float] = None,
-        deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None,
-    ) -> "DeleteEssenceMessageResponse":
-        return await self._unary_unary(
-            "/kritor.message.MessageService/DeleteEssenceMessage",
-            delete_essence_message_request,
-            DeleteEssenceMessageResponse,
-            timeout=timeout,
-            deadline=deadline,
-            metadata=metadata,
-        )
-
     async def get_essence_message_list(
         self,
         get_essence_message_list_request: "GetEssenceMessageListRequest",
@@ -414,6 +397,23 @@ class MessageServiceStub(betterproto.ServiceStub):
             "/kritor.message.MessageService/SetEssenceMessage",
             set_essence_message_request,
             SetEssenceMessageResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
+    async def delete_essence_message(
+        self,
+        delete_essence_message_request: "DeleteEssenceMessageRequest",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None,
+    ) -> "DeleteEssenceMessageResponse":
+        return await self._unary_unary(
+            "/kritor.message.MessageService/DeleteEssenceMessage",
+            delete_essence_message_request,
+            DeleteEssenceMessageResponse,
             timeout=timeout,
             deadline=deadline,
             metadata=metadata,
@@ -469,11 +469,6 @@ class MessageServiceBase(ServiceBase):
     ) -> "DownloadForwardMessageResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def delete_essence_message(
-        self, delete_essence_message_request: "DeleteEssenceMessageRequest"
-    ) -> "DeleteEssenceMessageResponse":
-        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
-
     async def get_essence_message_list(
         self, get_essence_message_list_request: "GetEssenceMessageListRequest"
     ) -> "GetEssenceMessageListResponse":
@@ -482,6 +477,11 @@ class MessageServiceBase(ServiceBase):
     async def set_essence_message(
         self, set_essence_message_request: "SetEssenceMessageRequest"
     ) -> "SetEssenceMessageResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def delete_essence_message(
+        self, delete_essence_message_request: "DeleteEssenceMessageRequest"
+    ) -> "DeleteEssenceMessageResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_send_message(
@@ -568,14 +568,6 @@ class MessageServiceBase(ServiceBase):
         response = await self.download_forward_message(request)
         await stream.send_message(response)
 
-    async def __rpc_delete_essence_message(
-        self,
-        stream: "grpclib.server.Stream[DeleteEssenceMessageRequest, DeleteEssenceMessageResponse]",
-    ) -> None:
-        request = await stream.recv_message()
-        response = await self.delete_essence_message(request)
-        await stream.send_message(response)
-
     async def __rpc_get_essence_message_list(
         self,
         stream: "grpclib.server.Stream[GetEssenceMessageListRequest, GetEssenceMessageListResponse]",
@@ -590,6 +582,14 @@ class MessageServiceBase(ServiceBase):
     ) -> None:
         request = await stream.recv_message()
         response = await self.set_essence_message(request)
+        await stream.send_message(response)
+
+    async def __rpc_delete_essence_message(
+        self,
+        stream: "grpclib.server.Stream[DeleteEssenceMessageRequest, DeleteEssenceMessageResponse]",
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.delete_essence_message(request)
         await stream.send_message(response)
 
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
@@ -660,12 +660,6 @@ class MessageServiceBase(ServiceBase):
                 DownloadForwardMessageRequest,
                 DownloadForwardMessageResponse,
             ),
-            "/kritor.message.MessageService/DeleteEssenceMessage": grpclib.const.Handler(
-                self.__rpc_delete_essence_message,
-                grpclib.const.Cardinality.UNARY_UNARY,
-                DeleteEssenceMessageRequest,
-                DeleteEssenceMessageResponse,
-            ),
             "/kritor.message.MessageService/GetEssenceMessageList": grpclib.const.Handler(
                 self.__rpc_get_essence_message_list,
                 grpclib.const.Cardinality.UNARY_UNARY,
@@ -677,5 +671,11 @@ class MessageServiceBase(ServiceBase):
                 grpclib.const.Cardinality.UNARY_UNARY,
                 SetEssenceMessageRequest,
                 SetEssenceMessageResponse,
+            ),
+            "/kritor.message.MessageService/DeleteEssenceMessage": grpclib.const.Handler(
+                self.__rpc_delete_essence_message,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                DeleteEssenceMessageRequest,
+                DeleteEssenceMessageResponse,
             ),
         }

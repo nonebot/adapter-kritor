@@ -204,8 +204,8 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return Markdown("markdown", {"markdown": markdown})
 
     @staticmethod
-    def button(bot_appid: int, rows: list[list["ButtonBaseData"]]) -> "Button":
-        return Button("button", {"bot_appid": bot_appid, "rows": [{"buttons": row} for row in rows]})
+    def button(bot_appid: int, rows: list[list["ButtonData"]]) -> "Keyboard":
+        return Keyboard("button", {"bot_appid": bot_appid, "rows": [{"buttons": row} for row in rows]})
 
 
 class TextData(TypedDict):
@@ -501,24 +501,24 @@ class ButtonRenderData(TypedDict):
     style: int
 
 
-class ButtonBaseData(TypedDict):
+class ButtonData(TypedDict):
     id: str
     render_data: ButtonRenderData
     action: ButtonActionData
 
 
-class ButtonRowData(TypedDict):
-    buttons: list[ButtonBaseData]
+class KeyboardRowData(TypedDict):
+    buttons: list[ButtonData]
 
 
-class ButtonData(TypedDict):
-    rows: list[ButtonRowData]
+class KeyboardData(TypedDict):
+    rows: list[KeyboardRowData]
     bot_appid: int
 
 
 @dataclass
-class Button(MessageSegment, element_type=ElementElementType.BUTTON):
-    data: ButtonData = field(default_factory=dict)  # type: ignore
+class Keyboard(MessageSegment, element_type=ElementElementType.KEYBOARD):
+    data: KeyboardData = field(default_factory=dict)  # type: ignore
 
 
 TYPE_MAPPING = {cls.__element_type__: cls for cls in MessageSegment.__subclasses__()}  # type: ignore

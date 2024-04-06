@@ -55,7 +55,7 @@ class GetAuthenticationStateResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetTicketRequest(betterproto.Message):
     account: str = betterproto.string_field(1)
-    ticket: str = betterproto.string_field(2)
+    super_ticket: str = betterproto.string_field(2)
 
 
 @dataclass(eq=False, repr=False)
@@ -68,8 +68,8 @@ class GetTicketResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class AddTicketRequest(betterproto.Message):
     account: str = betterproto.string_field(1)
-    ticket: str = betterproto.string_field(2)
-    new_ticket: str = betterproto.string_field(3)
+    super_ticket: str = betterproto.string_field(2)
+    ticket: str = betterproto.string_field(3)
 
 
 @dataclass(eq=False, repr=False)
@@ -81,8 +81,8 @@ class AddTicketResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class DeleteTicketRequest(betterproto.Message):
     account: str = betterproto.string_field(1)
-    ticket: str = betterproto.string_field(2)
-    delete_ticket: str = betterproto.string_field(3)
+    super_ticket: str = betterproto.string_field(2)
+    ticket: str = betterproto.string_field(3)
 
 
 @dataclass(eq=False, repr=False)
@@ -143,23 +143,6 @@ class AuthenticationServiceStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
-    async def delete_ticket(
-        self,
-        delete_ticket_request: "DeleteTicketRequest",
-        *,
-        timeout: Optional[float] = None,
-        deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None,
-    ) -> "DeleteTicketResponse":
-        return await self._unary_unary(
-            "/kritor.authentication.AuthenticationService/DeleteTicket",
-            delete_ticket_request,
-            DeleteTicketResponse,
-            timeout=timeout,
-            deadline=deadline,
-            metadata=metadata,
-        )
-
     async def add_ticket(
         self,
         add_ticket_request: "AddTicketRequest",
@@ -172,6 +155,23 @@ class AuthenticationServiceStub(betterproto.ServiceStub):
             "/kritor.authentication.AuthenticationService/AddTicket",
             add_ticket_request,
             AddTicketResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
+    async def delete_ticket(
+        self,
+        delete_ticket_request: "DeleteTicketRequest",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None,
+    ) -> "DeleteTicketResponse":
+        return await self._unary_unary(
+            "/kritor.authentication.AuthenticationService/DeleteTicket",
+            delete_ticket_request,
+            DeleteTicketResponse,
             timeout=timeout,
             deadline=deadline,
             metadata=metadata,
@@ -191,10 +191,10 @@ class AuthenticationServiceBase(ServiceBase):
     async def get_ticket(self, get_ticket_request: "GetTicketRequest") -> "GetTicketResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def delete_ticket(self, delete_ticket_request: "DeleteTicketRequest") -> "DeleteTicketResponse":
+    async def add_ticket(self, add_ticket_request: "AddTicketRequest") -> "AddTicketResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def add_ticket(self, add_ticket_request: "AddTicketRequest") -> "AddTicketResponse":
+    async def delete_ticket(self, delete_ticket_request: "DeleteTicketRequest") -> "DeleteTicketResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_authenticate(
@@ -217,16 +217,16 @@ class AuthenticationServiceBase(ServiceBase):
         response = await self.get_ticket(request)
         await stream.send_message(response)
 
+    async def __rpc_add_ticket(self, stream: "grpclib.server.Stream[AddTicketRequest, AddTicketResponse]") -> None:
+        request = await stream.recv_message()
+        response = await self.add_ticket(request)
+        await stream.send_message(response)
+
     async def __rpc_delete_ticket(
         self, stream: "grpclib.server.Stream[DeleteTicketRequest, DeleteTicketResponse]"
     ) -> None:
         request = await stream.recv_message()
         response = await self.delete_ticket(request)
-        await stream.send_message(response)
-
-    async def __rpc_add_ticket(self, stream: "grpclib.server.Stream[AddTicketRequest, AddTicketResponse]") -> None:
-        request = await stream.recv_message()
-        response = await self.add_ticket(request)
         await stream.send_message(response)
 
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
@@ -249,16 +249,16 @@ class AuthenticationServiceBase(ServiceBase):
                 GetTicketRequest,
                 GetTicketResponse,
             ),
-            "/kritor.authentication.AuthenticationService/DeleteTicket": grpclib.const.Handler(
-                self.__rpc_delete_ticket,
-                grpclib.const.Cardinality.UNARY_UNARY,
-                DeleteTicketRequest,
-                DeleteTicketResponse,
-            ),
             "/kritor.authentication.AuthenticationService/AddTicket": grpclib.const.Handler(
                 self.__rpc_add_ticket,
                 grpclib.const.Cardinality.UNARY_UNARY,
                 AddTicketRequest,
                 AddTicketResponse,
+            ),
+            "/kritor.authentication.AuthenticationService/DeleteTicket": grpclib.const.Handler(
+                self.__rpc_delete_ticket,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                DeleteTicketRequest,
+                DeleteTicketResponse,
             ),
         }

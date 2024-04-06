@@ -108,26 +108,6 @@ class SetProfileCardResponse(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
-class GetUidRequest(betterproto.Message):
-    target_uins: List[int] = betterproto.uint64_field(1)
-
-
-@dataclass(eq=False, repr=False)
-class GetUidResponse(betterproto.Message):
-    uid_map: Dict[int, str] = betterproto.map_field(1, betterproto.TYPE_UINT64, betterproto.TYPE_STRING)
-
-
-@dataclass(eq=False, repr=False)
-class GetUinByUidRequest(betterproto.Message):
-    target_uids: List[str] = betterproto.string_field(1)
-
-
-@dataclass(eq=False, repr=False)
-class GetUinByUidResponse(betterproto.Message):
-    uin_map: Dict[str, int] = betterproto.map_field(1, betterproto.TYPE_STRING, betterproto.TYPE_UINT64)
-
-
-@dataclass(eq=False, repr=False)
 class IsBlackListUserRequest(betterproto.Message):
     target_uid: str = betterproto.string_field(1, group="target")
     target_uin: int = betterproto.uint64_field(2, group="target")
@@ -148,6 +128,26 @@ class VoteUserRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class VoteUserResponse(betterproto.Message):
     pass
+
+
+@dataclass(eq=False, repr=False)
+class GetUidByUinRequest(betterproto.Message):
+    target_uins: List[int] = betterproto.uint64_field(1)
+
+
+@dataclass(eq=False, repr=False)
+class GetUidByUinResponse(betterproto.Message):
+    uid_map: Dict[int, str] = betterproto.map_field(1, betterproto.TYPE_UINT64, betterproto.TYPE_STRING)
+
+
+@dataclass(eq=False, repr=False)
+class GetUinByUidRequest(betterproto.Message):
+    target_uids: List[str] = betterproto.string_field(1)
+
+
+@dataclass(eq=False, repr=False)
+class GetUinByUidResponse(betterproto.Message):
+    uin_map: Dict[str, int] = betterproto.map_field(1, betterproto.TYPE_STRING, betterproto.TYPE_UINT64)
 
 
 class FriendServiceStub(betterproto.ServiceStub):
@@ -255,16 +255,16 @@ class FriendServiceStub(betterproto.ServiceStub):
 
     async def get_uid_by_uin(
         self,
-        get_uid_request: "GetUidRequest",
+        get_uid_by_uin_request: "GetUidByUinRequest",
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
         metadata: Optional["MetadataLike"] = None,
-    ) -> "GetUidResponse":
+    ) -> "GetUidByUinResponse":
         return await self._unary_unary(
             "/kritor.friend.FriendService/GetUidByUin",
-            get_uid_request,
-            GetUidResponse,
+            get_uid_by_uin_request,
+            GetUidByUinResponse,
             timeout=timeout,
             deadline=deadline,
             metadata=metadata,
@@ -314,7 +314,7 @@ class FriendServiceBase(ServiceBase):
     async def vote_user(self, vote_user_request: "VoteUserRequest") -> "VoteUserResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_uid_by_uin(self, get_uid_request: "GetUidRequest") -> "GetUidResponse":
+    async def get_uid_by_uin(self, get_uid_by_uin_request: "GetUidByUinRequest") -> "GetUidByUinResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def get_uin_by_uid(self, get_uin_by_uid_request: "GetUinByUidRequest") -> "GetUinByUidResponse":
@@ -365,7 +365,9 @@ class FriendServiceBase(ServiceBase):
         response = await self.vote_user(request)
         await stream.send_message(response)
 
-    async def __rpc_get_uid_by_uin(self, stream: "grpclib.server.Stream[GetUidRequest, GetUidResponse]") -> None:
+    async def __rpc_get_uid_by_uin(
+        self, stream: "grpclib.server.Stream[GetUidByUinRequest, GetUidByUinResponse]"
+    ) -> None:
         request = await stream.recv_message()
         response = await self.get_uid_by_uin(request)
         await stream.send_message(response)
@@ -418,8 +420,8 @@ class FriendServiceBase(ServiceBase):
             "/kritor.friend.FriendService/GetUidByUin": grpclib.const.Handler(
                 self.__rpc_get_uid_by_uin,
                 grpclib.const.Cardinality.UNARY_UNARY,
-                GetUidRequest,
-                GetUidResponse,
+                GetUidByUinRequest,
+                GetUidByUinResponse,
             ),
             "/kritor.friend.FriendService/GetUinByUid": grpclib.const.Handler(
                 self.__rpc_get_uin_by_uid,
