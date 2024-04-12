@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-adapter-kritor"
-version = "0.1.1"
+version = "0.1.2"
 description = "Nonebot Adapter for Kritor Protocol"
 authors = [
     {name = "rf_tar_railt", email = "rf_tar_railt@qq.com"},
@@ -66,4 +66,4 @@ includes = ["src/nonebot"]
 
 [tool.pdm.scripts]
 format = { composite = ["isort ./src/nonebot/adapters/kritor/ ./tests/","black ./src/nonebot/adapters/kritor/ ./tests/","ruff check ./src/nonebot/adapters/kritor/ ./tests/"] }
-compile = "python -m grpc_tools.protoc -I ./kritor/protos --python_betterproto_out=./src/nonebot/adapters/kritor/protos ./kritor/protos/auth/*.proto ./kritor/protos/common/*.proto ./kritor/protos/core/core.proto ./kritor/protos/customization/customization.proto ./kritor/protos/developer/*.proto ./kritor/protos/event/*.proto ./kritor/protos/file/*.proto ./kritor/protos/friend/*.proto ./kritor/protos/group/*.proto ./kritor/protos/guild/*.proto ./kritor/protos/message/message.proto ./kritor/protos/reverse/reverse.proto ./kritor/protos/web/web.proto"
+compile = "python -m grpc_tools.protoc -I ./kritor/protos --python_betterproto_out=./src/nonebot/adapters/kritor/protos ./kritor/protos/auth/*.proto ./kritor/protos/common/*.proto ./kritor/protos/core/core.proto ./kritor/protos/developer/*.proto ./kritor/protos/event/*.proto ./kritor/protos/file/*.proto ./kritor/protos/friend/*.proto ./kritor/protos/group/*.proto ./kritor/protos/guild/*.proto ./kritor/protos/message/message.proto ./kritor/protos/process/process.proto ./kritor/protos/reverse/reverse.proto ./kritor/protos/web/web.proto"

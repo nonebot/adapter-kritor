@@ -23,7 +23,7 @@ class File(betterproto.Message):
     file_size: int = betterproto.uint64_field(3)
     bus_id: int = betterproto.int32_field(4)
     upload_time: int = betterproto.uint32_field(5)
-    dead_time: int = betterproto.uint32_field(6)
+    expire_time: int = betterproto.uint32_field(6)
     modify_time: int = betterproto.uint32_field(7)
     download_times: int = betterproto.uint32_field(8)
     uploader: int = betterproto.uint64_field(9)

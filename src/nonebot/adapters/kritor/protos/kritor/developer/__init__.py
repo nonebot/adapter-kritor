@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 @dataclass(eq=False, repr=False)
 class ShellRequest(betterproto.Message):
-    command: str = betterproto.string_field(1)
+    command: List[str] = betterproto.string_field(1)
     directory: str = betterproto.string_field(2)
 
 

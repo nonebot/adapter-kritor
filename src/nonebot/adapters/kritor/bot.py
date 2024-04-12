@@ -24,6 +24,12 @@ from .protos.kritor.core import (
     SwitchAccountRequest,
     GetCurrentAccountRequest,
 )
+from .protos.kritor.process import (
+    ProcessServiceStub,
+    SetGroupApplyResultRequest,
+    SetFriendApplyResultRequest,
+    SetInvitedJoinGroupResultRequest,
+)
 from .protos.kritor.developer import (
     ShellRequest,
     GetLogRequest,
@@ -33,8 +39,8 @@ from .protos.kritor.developer import (
     GetDeviceBatteryRequest,
 )
 from .protos.kritor.file import (
-    UploadFileRequest,
     DeleteFileRequest,
+    UploadFileRequest,
     GetFileListRequest,
     CreateFolderRequest,
     DeleteFolderRequest,
@@ -43,9 +49,9 @@ from .protos.kritor.file import (
     GetFileSystemInfoRequest,
 )
 from .protos.kritor.friend import (
-    GetUidByUinRequest,
     VoteUserRequest,
     FriendServiceStub,
+    GetUidByUinRequest,
     GetUinByUidRequest,
     GetFriendListRequest,
     SetProfileCardRequest,
@@ -245,6 +251,7 @@ class Bot(BaseBot):
             guild = GuildServiceStub(client, metadata=metadata)
             file = GroupFileServiceStub(client, metadata=metadata)
             message = MessageServiceStub(client, metadata=metadata)
+            process = ProcessServiceStub(client, metadata=metadata)
 
         self.service = service
 
@@ -338,7 +345,7 @@ class Bot(BaseBot):
     async def shell(
         self,
         *,
-        command: str,
+        command: list[str],
         directory: str,
     ):
         """让协议端执行shell命令
@@ -386,7 +393,7 @@ class Bot(BaseBot):
         elif isinstance(message, MessageSegment):
             message = Message([message])
         elements = message.to_elements()
-        return await self.send_message(contact=event.contact, elements=elements)
+        return await self.send_message(contact=event.contact, elements=elements, message_id=event.message_id)
 
     @API
     async def send_message(
@@ -394,16 +401,18 @@ class Bot(BaseBot):
         *,
         contact: Contact,
         elements: list[Element],
+        message_id: Optional[str] = None,
     ) -> SendMessageResponse:
         """发送消息
 
         参数:
             contact: 要发送的目标
             message: 要发送的消息
+            message_id: 可能的回复的消息ID，用于被动消息
         """
         if contact.type == SceneType.GUILD:
             raise ValueError("Guild contact is not supported in this method. Use send_channel_message instead.")
-        return await self.service.message.send_message(SendMessageRequest(contact=contact.dump(), elements=elements))
+        return await self.service.message.send_message(SendMessageRequest(contact=contact.dump(), elements=elements, message_id=message_id))
 
     @API
     async def send_message_by_res_id(
@@ -504,9 +513,7 @@ class Bot(BaseBot):
         """
 
         return await self.service.message.react_message_with_emoji(
-            ReactMessageWithEmojiRequest(
-                contact=contact.dump(), message_id=message_id, face_id=emoji, is_set=is_set
-            )
+            ReactMessageWithEmojiRequest(contact=contact.dump(), message_id=message_id, face_id=emoji, is_set=is_set)
         )
 
     @API
@@ -1750,3 +1757,58 @@ class Bot(BaseBot):
         return (
             await self.service.group.get_group_honor(GetGroupHonorRequest(group_id=_group_id, refresh=refresh))
         ).group_honors_info
+
+    @API
+    async def reply_new_friend_request(
+        self,
+        *,
+        request_id: str,
+        is_approve: bool,
+        reason: Optional[str] = None,
+    ):
+        """回复好友请求
+
+        参数:
+            request_id: 请求ID
+            is_approve: 是否同意
+            reason: 拒绝理由
+        """
+        await self.service.process.set_friend_apply_result(
+            SetFriendApplyResultRequest(request_id=request_id, is_approve=is_approve, remark=reason)
+        )
+
+    @API
+    async def reply_add_member_request(
+        self,
+        *,
+        request_id: str,
+        is_approve: bool,
+        reason: Optional[str] = None,
+    ):
+        """回复新群友加群请求
+
+        参数:
+            request_id: 请求ID
+            is_approve: 是否同意
+            reason: 拒绝理由
+        """
+        await self.service.process.set_group_apply_result(
+            SetGroupApplyResultRequest(request_id=request_id, is_approve=is_approve, deny_reason=reason)
+        )
+
+    @API
+    async def reply_invite_group_request(
+        self,
+        *,
+        request_id: str,
+        is_approve: bool,
+    ):
+        """回复邀请入群请求
+
+        参数:
+            request_id: 请求ID
+            is_approve: 是否同意
+        """
+        await self.service.process.set_invited_join_group_result(
+            SetInvitedJoinGroupResultRequest(request_id=request_id, is_approve=is_approve)
+        )

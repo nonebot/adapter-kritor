@@ -23,6 +23,11 @@ class SendMessageRequest(betterproto.Message):
     contact: "_common__.Contact" = betterproto.message_field(1)
     elements: List["_common__.Element"] = betterproto.message_field(2)
     retry_count: Optional[int] = betterproto.uint32_field(3, optional=True, group="_retry_count")
+    message_id: Optional[str] = betterproto.string_field(4, optional=True, group="_message_id")
+    """passive_id"""
+
+    notice_id: Optional[str] = betterproto.string_field(5, optional=True, group="_notice_id")
+    request_id: Optional[str] = betterproto.string_field(6, optional=True, group="_request_id")
 
 
 @dataclass(eq=False, repr=False)

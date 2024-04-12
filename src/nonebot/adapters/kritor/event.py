@@ -320,8 +320,8 @@ class NoticeEvent(Event):
             self.to_me = self.get_user_id() == bot.self_id
 
 
-class FriendPokeNotice(NoticeEvent):
-    __type__: Literal["friend_poke"] = "friend_poke"
+class PrivatePokeNotice(NoticeEvent):
+    __type__: Literal["private_poke"] = "private_poke"
 
     operator_uid: str
     operator_uin: int
@@ -347,8 +347,8 @@ class FriendPokeNotice(NoticeEvent):
         return True
 
 
-class FriendRecallNotice(NoticeEvent):
-    __type__: Literal["friend_recall"] = "friend_recall"
+class PrivateRecallNotice(NoticeEvent):
+    __type__: Literal["private_recall"] = "private_recall"
 
     operator_uid: str
     operator_uin: int
@@ -660,9 +660,9 @@ class GroupWholeBanNotice(NoticeEvent):
     @override
     def get_event_description(self) -> str:
         text = (
-            f"Group {self.group_id} {self.operator_uid or self.operator_uin} whole banned"
+            f"Group {self.group_id} whole banned by {self.operator_uid or self.operator_uin} "
             if self.is_ban
-            else f"Group {self.group_id} {self.operator_uid or self.operator_uin} whole unbanned"
+            else f"Group {self.group_id} whole unbanned by {self.operator_uid or self.operator_uin}"
         )
         return escape_tag(text)
 
@@ -679,8 +679,38 @@ class GroupWholeBanNotice(NoticeEvent):
         return True
 
 
-class FriendFileUploadedNotice(NoticeEvent):
-    __type__: Literal["friend_file_uploaded"] = "friend_file_uploaded"
+class GroupReactMessageWithEmojiNotice(NoticeEvent):
+    __type__: Literal["group_react_message_with_emoji"] = "group_react_message_with_emoji"
+
+    group_id: int
+    message_id: str
+    face_id: int
+    is_set: bool
+
+    @override
+    def get_event_description(self) -> str:
+        text = (
+            f"Message {self.message_id} in Group {self.group_id} reacted with emoji {self.face_id}"
+            if self.is_set
+            else f"Message {self.message_id} in Group {self.group_id} unreacted with emoji {self.face_id}"
+        )
+        return escape_tag(text)
+
+    @override
+    def get_user_id(self) -> str:
+        raise ValueError("Event has no context!")
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.group_id}_{self.message_id}"
+
+    @override
+    def is_tome(self) -> bool:
+        return False
+
+
+class PrivateFileUploadedNotice(NoticeEvent):
+    __type__: Literal["private_file_uploaded"] = "private_file_uploaded"
 
     operator_uid: str
     operator_uin: int
@@ -744,8 +774,8 @@ class GroupFileUploadedNotice(NoticeEvent):
 
 NoticeEventType = Union[
     Union[
-        FriendPokeNotice,
-        FriendRecallNotice,
+        PrivatePokeNotice,
+        PrivateRecallNotice,
         GroupUniqueTitleChangedNotice,
         GroupEssenceMessageNotice,
         GroupPokeNotice,
@@ -757,8 +787,9 @@ NoticeEventType = Union[
         GroupRecallNotice,
         GroupSignInNotice,
         GroupWholeBanNotice,
-        FriendFileUploadedNotice,
+        PrivateFileUploadedNotice,
         GroupFileUploadedNotice,
+        GroupReactMessageWithEmojiNotice,
     ],
     NoticeEvent,
 ]

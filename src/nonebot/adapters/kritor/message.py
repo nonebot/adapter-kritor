@@ -157,7 +157,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         _platform = (
             MusicElementMusicPlatform.QQ
             if platform == "qq"
-            else MusicElementMusicPlatform.NetEase if platform == "netease" else MusicElementMusicPlatform.Custom
+            else MusicElementMusicPlatform.NETEASE if platform == "netease" else MusicElementMusicPlatform.CUSTOM
         )
         return Music(
             "music",

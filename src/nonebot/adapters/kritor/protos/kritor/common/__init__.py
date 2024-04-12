@@ -56,8 +56,8 @@ class ImageElementImageType(betterproto.Enum):
 
 class MusicElementMusicPlatform(betterproto.Enum):
     QQ = 0
-    NetEase = 1
-    Custom = 10
+    NETEASE = 1
+    CUSTOM = 10
 
 
 class ResponseResponseCode(betterproto.Enum):

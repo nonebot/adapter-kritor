@@ -36,27 +36,29 @@ class GroupMemberBanNoticeGroupMemberBanType(betterproto.Enum):
 
 class NoticeEventNoticeType(betterproto.Enum):
     UNKNOWN = 0
-    FRIEND_POKE = 10
-    FRIEND_RECALL = 11
-    FRIEND_FILE_COME = 12
+    PRIVATE_POKE = 10
+    PRIVATE_RECALL = 11
+    PRIVATE_FILE_UPLOADED = 12
     GROUP_POKE = 20
-    GROUP_CARD_CHANGED = 21
-    GROUP_MEMBER_UNIQUE_TITLE_CHANGED = 22
-    GROUP_ESSENCE_CHANGED = 23
-    GROUP_RECALL = 24
-    GROUP_MEMBER_INCREASE = 25
-    GROUP_MEMBER_DECREASE = 26
-    GROUP_ADMIN_CHANGED = 27
-    GROUP_MEMBER_BANNED = 28
-    GROUP_SIGN = 29
-    GROUP_WHOLE_BAN = 30
-    GROUP_FILE_COME = 31
+    GROUP_RECALL = 21
+    GROUP_FILE_UPLOADED = 22
+    GROUP_CARD_CHANGED = 23
+    GROUP_MEMBER_UNIQUE_TITLE_CHANGED = 24
+    GROUP_ESSENCE_CHANGED = 25
+    GROUP_MEMBER_INCREASE = 26
+    GROUP_MEMBER_DECREASE = 27
+    GROUP_ADMIN_CHANGED = 28
+    GROUP_SIGN_IN = 29
+    GROUP_MEMBER_BAN = 30
+    GROUP_WHOLE_BAN = 31
+    GROUP_REACT_MESSAGE_WITH_EMOJI = 32
 
 
-class RequestsEventRequestType(betterproto.Enum):
-    FRIEND_APPLY = 0
-    GROUP_APPLY = 1
-    INVITED_GROUP = 2
+class RequestEventRequestType(betterproto.Enum):
+    UNKNOWN = 0
+    FRIEND_APPLY = 10
+    GROUP_APPLY = 11
+    INVITED_GROUP = 12
 
 
 class EventType(betterproto.Enum):
@@ -67,7 +69,7 @@ class EventType(betterproto.Enum):
 
 
 @dataclass(eq=False, repr=False)
-class FriendPokeNotice(betterproto.Message):
+class PrivatePokeNotice(betterproto.Message):
     operator_uid: str = betterproto.string_field(1)
     operator_uin: int = betterproto.uint64_field(2)
     action: str = betterproto.string_field(3)
@@ -76,7 +78,7 @@ class FriendPokeNotice(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
-class FriendRecallNotice(betterproto.Message):
+class PrivateRecallNotice(betterproto.Message):
     operator_uid: str = betterproto.string_field(1)
     operator_uin: int = betterproto.uint64_field(2)
     message_id: str = betterproto.string_field(3)
@@ -84,21 +86,15 @@ class FriendRecallNotice(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
-class GroupUniqueTitleChangedNotice(betterproto.Message):
-    target: int = betterproto.uint64_field(1)
-    title: str = betterproto.string_field(2)
-    group_id: int = betterproto.uint64_field(3)
-
-
-@dataclass(eq=False, repr=False)
-class GroupEssenceMessageNotice(betterproto.Message):
-    group_id: int = betterproto.uint64_field(1)
-    operator_uid: str = betterproto.string_field(2)
-    operator_uin: int = betterproto.uint64_field(3)
-    target_uid: str = betterproto.string_field(4)
-    target_uin: int = betterproto.uint64_field(5)
-    message_id: str = betterproto.string_field(6)
-    sub_type: int = betterproto.uint32_field(7)
+class PrivateFileUploadedNotice(betterproto.Message):
+    operator_uid: str = betterproto.string_field(1)
+    operator_uin: int = betterproto.uint64_field(2)
+    file_id: str = betterproto.string_field(3)
+    file_sub_id: str = betterproto.string_field(4)
+    file_name: str = betterproto.string_field(5)
+    file_size: int = betterproto.uint64_field(6)
+    expire_time: int = betterproto.uint32_field(7)
+    url: str = betterproto.string_field(8)
 
 
 @dataclass(eq=False, repr=False)
@@ -114,6 +110,30 @@ class GroupPokeNotice(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
+class GroupRecallNotice(betterproto.Message):
+    group_id: int = betterproto.uint64_field(1)
+    operator_uid: str = betterproto.string_field(2)
+    operator_uin: int = betterproto.uint64_field(3)
+    target_uid: str = betterproto.string_field(4)
+    target_uin: int = betterproto.uint64_field(5)
+    message_id: str = betterproto.string_field(6)
+    tip_text: str = betterproto.string_field(7)
+
+
+@dataclass(eq=False, repr=False)
+class GroupFileUploadedNotice(betterproto.Message):
+    group_id: int = betterproto.uint64_field(1)
+    operator_uid: str = betterproto.string_field(2)
+    operator_uin: int = betterproto.uint64_field(3)
+    file_id: str = betterproto.string_field(4)
+    file_name: str = betterproto.string_field(5)
+    file_size: int = betterproto.uint64_field(6)
+    bus_id: int = betterproto.int32_field(7)
+    expire_time: int = betterproto.uint32_field(8)
+    file_url: str = betterproto.string_field(9)
+
+
+@dataclass(eq=False, repr=False)
 class GroupCardChangedNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
     operator_uid: str = betterproto.string_field(2)
@@ -121,6 +141,25 @@ class GroupCardChangedNotice(betterproto.Message):
     target_uid: str = betterproto.string_field(4)
     target_uin: int = betterproto.uint64_field(5)
     new_card: str = betterproto.string_field(6)
+
+
+@dataclass(eq=False, repr=False)
+class GroupUniqueTitleChangedNotice(betterproto.Message):
+    group_id: int = betterproto.uint64_field(1)
+    target_uid: str = betterproto.string_field(2)
+    target_uin: int = betterproto.uint64_field(3)
+    title: str = betterproto.string_field(4)
+
+
+@dataclass(eq=False, repr=False)
+class GroupEssenceMessageNotice(betterproto.Message):
+    group_id: int = betterproto.uint64_field(1)
+    operator_uid: str = betterproto.string_field(2)
+    operator_uin: int = betterproto.uint64_field(3)
+    target_uid: str = betterproto.string_field(4)
+    target_uin: int = betterproto.uint64_field(5)
+    message_id: str = betterproto.string_field(6)
+    is_set: bool = betterproto.bool_field(7)
 
 
 @dataclass(eq=False, repr=False)
@@ -152,6 +191,15 @@ class GroupAdminChangedNotice(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
+class GroupSignInNotice(betterproto.Message):
+    group_id: int = betterproto.uint64_field(1)
+    target_uid: str = betterproto.string_field(2)
+    target_uin: int = betterproto.uint64_field(3)
+    action: str = betterproto.string_field(4)
+    rank_image: str = betterproto.string_field(6)
+
+
+@dataclass(eq=False, repr=False)
 class GroupMemberBanNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
     operator_uid: str = betterproto.string_field(2)
@@ -163,28 +211,6 @@ class GroupMemberBanNotice(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
-class GroupRecallNotice(betterproto.Message):
-    group_id: int = betterproto.uint64_field(1)
-    message_id: str = betterproto.string_field(2)
-    tip_text: str = betterproto.string_field(3)
-    operator_uid: str = betterproto.string_field(4)
-    operator_uin: int = betterproto.uint64_field(5)
-    target_uid: str = betterproto.string_field(6)
-    target_uin: int = betterproto.uint64_field(7)
-    message_seq: int = betterproto.uint64_field(8)
-
-
-@dataclass(eq=False, repr=False)
-class GroupSignInNotice(betterproto.Message):
-    group_id: int = betterproto.uint64_field(1)
-    target_uid: str = betterproto.string_field(2)
-    target_uin: int = betterproto.uint64_field(3)
-    action: str = betterproto.string_field(4)
-    suffix: str = betterproto.string_field(5)
-    rank_image: str = betterproto.string_field(6)
-
-
-@dataclass(eq=False, repr=False)
 class GroupWholeBanNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
     operator_uid: str = betterproto.string_field(2)
@@ -193,58 +219,41 @@ class GroupWholeBanNotice(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
-class FriendFileUploadedNotice(betterproto.Message):
-    operator_uid: str = betterproto.string_field(1)
-    operator_uin: int = betterproto.uint64_field(2)
-    file_id: str = betterproto.string_field(3)
-    file_sub_id: str = betterproto.string_field(4)
-    file_name: str = betterproto.string_field(5)
-    file_size: int = betterproto.uint64_field(6)
-    expire_time: int = betterproto.uint32_field(7)
-    url: str = betterproto.string_field(8)
-
-
-@dataclass(eq=False, repr=False)
-class GroupFileUploadedNotice(betterproto.Message):
+class GroupReactMessageWithEmojiNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    operator_uid: str = betterproto.string_field(2)
-    operator_uin: int = betterproto.uint64_field(3)
-    file_id: str = betterproto.string_field(4)
-    file_sub_id: str = betterproto.string_field(5)
-    file_name: str = betterproto.string_field(6)
-    file_size: int = betterproto.uint64_field(7)
-    expire_time: int = betterproto.uint32_field(8)
-    biz: int = betterproto.int32_field(9)
-    url: str = betterproto.string_field(10)
+    message_id: str = betterproto.string_field(2)
+    face_id: int = betterproto.uint32_field(3)
+    is_set: bool = betterproto.bool_field(4)
 
 
 @dataclass(eq=False, repr=False)
 class NoticeEvent(betterproto.Message):
     type: "NoticeEventNoticeType" = betterproto.enum_field(1)
     time: int = betterproto.uint32_field(2)
-    friend_poke: "FriendPokeNotice" = betterproto.message_field(10, group="notice")
-    friend_recall: "FriendRecallNotice" = betterproto.message_field(11, group="notice")
-    friend_file_uploaded: "FriendFileUploadedNotice" = betterproto.message_field(12, group="notice")
+    notice_id: str = betterproto.string_field(3)
+    private_poke: "PrivatePokeNotice" = betterproto.message_field(10, group="notice")
+    private_recall: "PrivateRecallNotice" = betterproto.message_field(11, group="notice")
+    private_file_uploaded: "PrivateFileUploadedNotice" = betterproto.message_field(12, group="notice")
     group_poke: "GroupPokeNotice" = betterproto.message_field(20, group="notice")
-    group_card_changed: "GroupCardChangedNotice" = betterproto.message_field(21, group="notice")
-    group_member_unique_title_changed: "GroupUniqueTitleChangedNotice" = betterproto.message_field(22, group="notice")
-    group_essence_changed: "GroupEssenceMessageNotice" = betterproto.message_field(23, group="notice")
-    group_recall: "GroupRecallNotice" = betterproto.message_field(24, group="notice")
-    group_member_increase: "GroupMemberIncreasedNotice" = betterproto.message_field(25, group="notice")
-    group_member_decrease: "GroupMemberDecreasedNotice" = betterproto.message_field(26, group="notice")
-    group_admin_change: "GroupAdminChangedNotice" = betterproto.message_field(27, group="notice")
-    group_member_ban: "GroupMemberBanNotice" = betterproto.message_field(28, group="notice")
+    group_recall: "GroupRecallNotice" = betterproto.message_field(21, group="notice")
+    group_file_uploaded: "GroupFileUploadedNotice" = betterproto.message_field(22, group="notice")
+    group_card_changed: "GroupCardChangedNotice" = betterproto.message_field(23, group="notice")
+    group_member_unique_title_changed: "GroupUniqueTitleChangedNotice" = betterproto.message_field(24, group="notice")
+    group_essence_changed: "GroupEssenceMessageNotice" = betterproto.message_field(25, group="notice")
+    group_member_increase: "GroupMemberIncreasedNotice" = betterproto.message_field(26, group="notice")
+    group_member_decrease: "GroupMemberDecreasedNotice" = betterproto.message_field(27, group="notice")
+    group_admin_changed: "GroupAdminChangedNotice" = betterproto.message_field(28, group="notice")
     group_sign_in: "GroupSignInNotice" = betterproto.message_field(29, group="notice")
-    group_whole_ban: "GroupWholeBanNotice" = betterproto.message_field(30, group="notice")
-    group_file_uploaded: "GroupFileUploadedNotice" = betterproto.message_field(31, group="notice")
+    group_member_ban: "GroupMemberBanNotice" = betterproto.message_field(30, group="notice")
+    group_whole_ban: "GroupWholeBanNotice" = betterproto.message_field(31, group="notice")
+    group_react_message_with_emoji: "GroupReactMessageWithEmojiNotice" = betterproto.message_field(32, group="notice")
 
 
 @dataclass(eq=False, repr=False)
 class FriendApplyRequest(betterproto.Message):
     applier_uid: str = betterproto.string_field(1)
     applier_uin: int = betterproto.uint64_field(2)
-    flag: str = betterproto.string_field(3)
-    message: str = betterproto.string_field(4)
+    message: str = betterproto.string_field(3)
 
 
 @dataclass(eq=False, repr=False)
@@ -255,7 +264,6 @@ class GroupApplyRequest(betterproto.Message):
     inviter_uid: str = betterproto.string_field(4)
     inviter_uin: int = betterproto.uint64_field(5)
     reason: str = betterproto.string_field(6)
-    flag: str = betterproto.string_field(7)
 
 
 @dataclass(eq=False, repr=False)
@@ -263,16 +271,16 @@ class InvitedJoinGroupRequest(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
     inviter_uid: str = betterproto.string_field(2)
     inviter_uin: int = betterproto.uint64_field(3)
-    flag: str = betterproto.string_field(4)
 
 
 @dataclass(eq=False, repr=False)
-class RequestsEvent(betterproto.Message):
-    type: "RequestsEventRequestType" = betterproto.enum_field(1)
+class RequestEvent(betterproto.Message):
+    type: "RequestEventRequestType" = betterproto.enum_field(1)
     time: int = betterproto.uint32_field(2)
-    friend_apply: "FriendApplyRequest" = betterproto.message_field(3, group="request")
-    group_apply: "GroupApplyRequest" = betterproto.message_field(4, group="request")
-    invited_group: "InvitedJoinGroupRequest" = betterproto.message_field(5, group="request")
+    request_id: str = betterproto.string_field(3)
+    friend_apply: "FriendApplyRequest" = betterproto.message_field(10, group="request")
+    group_apply: "GroupApplyRequest" = betterproto.message_field(11, group="request")
+    invited_group: "InvitedJoinGroupRequest" = betterproto.message_field(12, group="request")
 
 
 @dataclass(eq=False, repr=False)
@@ -284,7 +292,7 @@ class RequestPushEvent(betterproto.Message):
 class EventStructure(betterproto.Message):
     type: "EventType" = betterproto.enum_field(1)
     message: "_common__.PushMessageBody" = betterproto.message_field(2, group="event")
-    request: "RequestsEvent" = betterproto.message_field(3, group="event")
+    request: "RequestEvent" = betterproto.message_field(3, group="event")
     notice: "NoticeEvent" = betterproto.message_field(4, group="event")
 
 
