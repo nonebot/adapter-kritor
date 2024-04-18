@@ -412,7 +412,9 @@ class Bot(BaseBot):
         """
         if contact.type == SceneType.GUILD:
             raise ValueError("Guild contact is not supported in this method. Use send_channel_message instead.")
-        return await self.service.message.send_message(SendMessageRequest(contact=contact.dump(), elements=elements, message_id=message_id))
+        return await self.service.message.send_message(
+            SendMessageRequest(contact=contact.dump(), elements=elements, message_id=message_id)
+        )
 
     @API
     async def send_message_by_res_id(

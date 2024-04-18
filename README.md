@@ -27,7 +27,7 @@ DRIVER=~none
 KRITOR_CLIENTS='
 [
   {
-    "host: "xxx",
+    "host": "xxx",
     "port": "xxx",
     "account": "xxx",
     "ticket": "xxx"

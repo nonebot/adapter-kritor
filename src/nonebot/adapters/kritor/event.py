@@ -9,7 +9,6 @@ from nonebot.compat import model_dump
 
 from nonebot.adapters import Event as BaseEvent
 
-from .bot import Bot
 from .compat import model_validator
 from .message import Reply, Message
 from .model import Group, Guild, Friend, Nearby, Sender, Stranger, ContactType, StrangerFromGroup
@@ -71,6 +70,7 @@ class MessageEvent(Event):
 
     @property
     def replied_message(self) -> Optional["MessageEvent"]:
+        """返回可能的回复元素代表的原消息事件。"""
         return getattr(self, "_replied_message", None)
 
     @override
@@ -419,7 +419,7 @@ class GroupEssenceMessageNotice(NoticeEvent):
         return f"{self.group_id}_{self.operator_uin or self.operator_uid}"
 
     @override
-    def check_tome(self, bot: Bot) -> None:
+    def check_tome(self, bot: "Bot") -> None:
         self.to_me = f"{self.target_uin or self.target_uid}" == bot.self_id
 
 
@@ -449,7 +449,7 @@ class GroupPokeNotice(NoticeEvent):
         return f"{self.group_id}_{self.operator_uin or self.operator_uid}"
 
     @override
-    def check_tome(self, bot: Bot) -> None:
+    def check_tome(self, bot: "Bot") -> None:
         self.to_me = f"{self.target_uin or self.target_uid}" == bot.self_id
 
 
@@ -477,7 +477,7 @@ class GroupCardChangedNotice(NoticeEvent):
         return f"{self.group_id}_{self.operator_uin or self.operator_uid}"
 
     @override
-    def check_tome(self, bot: Bot) -> None:
+    def check_tome(self, bot: "Bot") -> None:
         self.to_me = f"{self.target_uin or self.target_uid}" == bot.self_id
 
 
@@ -617,7 +617,7 @@ class GroupRecallNotice(NoticeEvent):
         return f"{self.group_id}_{self.operator_uin or self.operator_uid}"
 
     @override
-    def check_tome(self, bot: Bot) -> None:
+    def check_tome(self, bot: "Bot") -> None:
         self.to_me = f"{self.target_uin or self.target_uid}" == bot.self_id
 
 

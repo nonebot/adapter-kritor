@@ -107,35 +107,45 @@ class Adapter(BaseAdapter):
 
     async def grpc(self, info: ClientInfo) -> None:
         channel = Channel(info.host, info.port)
-        async with channel:
-            auth = AuthenticationServiceStub(channel)
-            if not self.kritor_config.kritor_skip_auth:
-                request = AuthenticateRequest(account=info.account, ticket=info.ticket)
-                response = await auth.authenticate(request)
-                if response.code != AuthenticateResponseAuthenticateResponseCode.OK:
-                    log(
-                        "ERROR",
-                        f"<r><bg #f8bbd0>Account {info.account} authenticate failed\n"
-                        f"Error code: {response.code}"
-                        f"Error message: {response.msg}</bg #f8bbd0></r>",
-                    )
-                    return
-            state = await auth.get_authentication_state(GetAuthenticationStateRequest(account=info.account))
-            log("INFO", f"<y>Account {info.account} authenticate success</y>")
-            bot = Bot(self, info.account, info, channel, state.is_required)
-            self.bot_connect(bot)
-            event = EventServiceStub(channel)
-            listens = [
-                asyncio.create_task(self._listen_message(bot, event)),
-                asyncio.create_task(self._listen_notice(bot, event)),
-                asyncio.create_task(self._listen_request(bot, event)),
-                asyncio.create_task(self._listen_core(bot, event)),
-            ]
-            await asyncio.wait(listens, return_when=asyncio.FIRST_EXCEPTION)
-        for task in listens:
-            task.cancel()
-            await task
-        self.bot_disconnect(bot)
+        listens = []
+        bot: Optional[Bot] = None
+        try:
+            async with channel:
+                auth = AuthenticationServiceStub(channel)
+                if not self.kritor_config.kritor_skip_auth:
+                    request = AuthenticateRequest(account=info.account, ticket=info.ticket)
+                    response = await auth.authenticate(request, timeout=60)
+                    if response.code != AuthenticateResponseAuthenticateResponseCode.OK:
+                        log(
+                            "ERROR",
+                            f"<r><bg #f8bbd0>Account {info.account} authenticate failed\n"
+                            f"Error code: {response.code}"
+                            f"Error message: {response.msg}</bg #f8bbd0></r>",
+                        )
+                        return
+                state = await auth.get_authentication_state(
+                    GetAuthenticationStateRequest(account=info.account), timeout=60
+                )
+                log("INFO", f"<y>Account {info.account} authenticate success</y>")
+                bot = Bot(self, info.account, info, channel, state.is_required)
+                self.bot_connect(bot)
+                event = EventServiceStub(channel)
+                listens = [
+                    asyncio.create_task(self._listen_message(bot, event)),
+                    asyncio.create_task(self._listen_notice(bot, event)),
+                    asyncio.create_task(self._listen_request(bot, event)),
+                    asyncio.create_task(self._listen_core(bot, event)),
+                ]
+                await asyncio.wait(listens, return_when=asyncio.FIRST_COMPLETED)
+        except Exception as e:
+            log("ERROR", f"Bot {info.account} connection failed: {e}")
+            raise
+        finally:
+            for task in listens:
+                task.cancel()
+                await task
+            if bot:
+                self.bot_disconnect(bot)
 
     @override
     async def _call_api(self, bot: Bot, api: str, **data: Any) -> Any:
