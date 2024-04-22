@@ -13,8 +13,11 @@ from nonebot.adapters import MessageSegment as BaseMessageSegment
 from .model import SceneType
 from .protos.kritor.common import Scene as KritorScene
 from .protos.kritor.common import (
+    Button,
     Element,
+    KeyboardRow,
     ContactElement,
+    KeyboardElement,
     ElementElementType,
     ImageElementImageType,
     MusicElementMusicPlatform,
@@ -204,8 +207,8 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return Markdown("markdown", {"markdown": markdown})
 
     @staticmethod
-    def button(bot_appid: int, rows: list[list["ButtonData"]]) -> "Keyboard":
-        return Keyboard("button", {"bot_appid": bot_appid, "rows": [{"buttons": row} for row in rows]})
+    def keyboard(bot_appid: int, buttons: list[list[Button]]) -> "Keyboard":
+        return Keyboard("keyboard", {"bot_appid": bot_appid, "rows": [{"buttons": row} for row in buttons]})
 
 
 class TextData(TypedDict):
@@ -480,35 +483,8 @@ class Markdown(MessageSegment, element_type=ElementElementType.MARKDOWN):
     data: MarkdownData = field(default_factory=dict)  # type: ignore
 
 
-class ButtonActionPermissionData(TypedDict):
-    type: int
-    role_ids: list[int]
-    user_ids: list[int]
-
-
-class ButtonActionData(TypedDict):
-    type: int
-    permission: ButtonActionPermissionData
-    unsupported_tips: str
-    data: str
-    reply: bool
-    enter: bool
-
-
-class ButtonRenderData(TypedDict):
-    label: str
-    visited_label: str
-    style: int
-
-
-class ButtonData(TypedDict):
-    id: str
-    render_data: ButtonRenderData
-    action: ButtonActionData
-
-
 class KeyboardRowData(TypedDict):
-    buttons: list[ButtonData]
+    buttons: list[Button]
 
 
 class KeyboardData(TypedDict):
@@ -519,6 +495,16 @@ class KeyboardData(TypedDict):
 @dataclass
 class Keyboard(MessageSegment, element_type=ElementElementType.KEYBOARD):
     data: KeyboardData = field(default_factory=dict)  # type: ignore
+
+    @override
+    def dump(self) -> "Element":
+        return Element(
+            type=ElementElementType.KEYBOARD,
+            keyboard=KeyboardElement(
+                rows=[KeyboardRow(buttons=row["buttons"]) for row in self.data["rows"]],
+                bot_appid=self.data["bot_appid"],
+            ),
+        )
 
 
 TYPE_MAPPING = {cls.__element_type__: cls for cls in MessageSegment.__subclasses__()}  # type: ignore
