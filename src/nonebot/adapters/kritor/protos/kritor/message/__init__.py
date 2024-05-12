@@ -33,7 +33,7 @@ class SendMessageRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class SendMessageResponse(betterproto.Message):
     message_id: str = betterproto.string_field(1)
-    message_time: int = betterproto.uint32_field(2)
+    message_time: int = betterproto.uint64_field(2)
 
 
 @dataclass(eq=False, repr=False)
@@ -46,7 +46,7 @@ class SendMessageByResIdRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class SendMessageByResIdResponse(betterproto.Message):
     message_id: str = betterproto.string_field(1)
-    message_time: int = betterproto.uint32_field(2)
+    message_time: int = betterproto.uint64_field(2)
 
 
 @dataclass(eq=False, repr=False)

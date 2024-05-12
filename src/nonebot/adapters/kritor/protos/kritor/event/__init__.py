@@ -93,7 +93,7 @@ class PrivateFileUploadedNotice(betterproto.Message):
     file_sub_id: str = betterproto.string_field(4)
     file_name: str = betterproto.string_field(5)
     file_size: int = betterproto.uint64_field(6)
-    expire_time: int = betterproto.uint32_field(7)
+    expire_time: int = betterproto.uint64_field(7)
     url: str = betterproto.string_field(8)
 
 
@@ -129,7 +129,7 @@ class GroupFileUploadedNotice(betterproto.Message):
     file_name: str = betterproto.string_field(5)
     file_size: int = betterproto.uint64_field(6)
     bus_id: int = betterproto.int32_field(7)
-    expire_time: int = betterproto.uint32_field(8)
+    expire_time: int = betterproto.uint64_field(8)
     file_url: str = betterproto.string_field(9)
 
 
@@ -229,7 +229,7 @@ class GroupReactMessageWithEmojiNotice(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class NoticeEvent(betterproto.Message):
     type: "NoticeEventNoticeType" = betterproto.enum_field(1)
-    time: int = betterproto.uint32_field(2)
+    time: int = betterproto.uint64_field(2)
     notice_id: str = betterproto.string_field(3)
     private_poke: "PrivatePokeNotice" = betterproto.message_field(10, group="notice")
     private_recall: "PrivateRecallNotice" = betterproto.message_field(11, group="notice")
@@ -276,7 +276,7 @@ class InvitedJoinGroupRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class RequestEvent(betterproto.Message):
     type: "RequestEventRequestType" = betterproto.enum_field(1)
-    time: int = betterproto.uint32_field(2)
+    time: int = betterproto.uint64_field(2)
     request_id: str = betterproto.string_field(3)
     friend_apply: "FriendApplyRequest" = betterproto.message_field(10, group="request")
     group_apply: "GroupApplyRequest" = betterproto.message_field(11, group="request")

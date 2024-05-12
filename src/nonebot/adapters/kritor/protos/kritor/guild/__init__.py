@@ -245,7 +245,7 @@ class SendChannelMessageResponse(betterproto.Message):
     """发送信息到子频道响应"""
 
     message_id: str = betterproto.string_field(1)
-    time: int = betterproto.int64_field(2)
+    message_time: int = betterproto.uint64_field(2)
 
 
 @dataclass(eq=False, repr=False)

@@ -387,7 +387,7 @@ class Bot(BaseBot):
                 message=str(message),
                 **kwargs,
             )
-            return SendMessageResponse(message_id=resp.message_id, message_time=resp.time)
+            return SendMessageResponse(message_id=resp.message_id, message_time=resp.message_time)
         if isinstance(message, str):
             message = Message(message)
         elif isinstance(message, MessageSegment):

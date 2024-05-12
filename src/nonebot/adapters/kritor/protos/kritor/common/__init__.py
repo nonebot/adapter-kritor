@@ -20,6 +20,13 @@ class Scene(betterproto.Enum):
     STRANGER = 9
 
 
+class Role(betterproto.Enum):
+    UNKNOWN = 0
+    MEMBER = 1
+    ADMIN = 2
+    OWNER = 3
+
+
 class ElementElementType(betterproto.Enum):
     TEXT = 0
     AT = 1
@@ -80,6 +87,7 @@ class Sender(betterproto.Message):
     uid: str = betterproto.string_field(1)
     uin: Optional[int] = betterproto.uint64_field(2, optional=True, group="_uin")
     nick: Optional[str] = betterproto.string_field(3, optional=True, group="_nick")
+    role: Optional["Role"] = betterproto.enum_field(4, optional=True, group="_role")
 
 
 @dataclass(eq=False, repr=False)
@@ -328,7 +336,7 @@ class KeyboardElement(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class PushMessageBody(betterproto.Message):
-    time: int = betterproto.uint32_field(1)
+    time: int = betterproto.uint64_field(1)
     message_id: str = betterproto.string_field(2)
     message_seq: int = betterproto.uint64_field(3)
     contact: "Contact" = betterproto.message_field(4)
@@ -351,8 +359,8 @@ class EssenceMessageBody(betterproto.Message):
     operator_uid: int = betterproto.uint64_field(5)
     operator_uin: int = betterproto.uint64_field(6)
     operator_nick: str = betterproto.string_field(7)
-    operation_time: int = betterproto.uint32_field(8)
-    message_time: int = betterproto.uint32_field(9)
+    operation_time: int = betterproto.uint64_field(8)
+    message_time: int = betterproto.uint64_field(9)
     message_id: str = betterproto.string_field(10)
     message_seq: int = betterproto.uint64_field(11)
     json_elements: str = betterproto.string_field(12)

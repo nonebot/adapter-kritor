@@ -4,6 +4,7 @@ from typing import Union, Literal, Optional
 from pydantic import Field, BaseModel
 
 from .protos.kritor.common import Scene
+from .protos.kritor.common import Role as ProtoRole
 from .protos.kritor.common import Sender as ProtoSender
 from .protos.kritor.common import Contact as ProtoContact
 
@@ -62,14 +63,23 @@ ContactType = Union[
 ]
 
 
+class Role(IntEnum):
+    UNKNOWN = 0
+    MEMBER = 1
+    ADMIN = 2
+    OWNER = 3
+
+
 class Sender(BaseModel):
     uid: str
     uin: Optional[int] = None
     nick: Optional[str] = None
+    role: Optional[Role] = None
 
     def dump(self) -> ProtoSender:
         return ProtoSender(
             uid=self.uid,
             uin=self.uin,
             nick=self.nick,
+            role=ProtoRole(self.role.value) if self.role else None,
         )

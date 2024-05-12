@@ -43,7 +43,7 @@ class NotJoinedGroupInfo(betterproto.Message):
     group_name: str = betterproto.string_field(4)
     group_desc: str = betterproto.string_field(5)
     owner: int = betterproto.uint64_field(6)
-    create_time: int = betterproto.uint32_field(7)
+    create_time: int = betterproto.uint64_field(7)
     group_flag: int = betterproto.uint32_field(8)
     group_flag_ext: int = betterproto.uint32_field(9)
 
@@ -52,7 +52,7 @@ class NotJoinedGroupInfo(betterproto.Message):
 class ProhibitedUserInfo(betterproto.Message):
     uid: str = betterproto.string_field(1)
     uin: int = betterproto.uint64_field(2)
-    prohibited_time: int = betterproto.uint32_field(3)
+    prohibited_time: int = betterproto.uint64_field(3)
 
 
 @dataclass(eq=False, repr=False)
@@ -73,12 +73,12 @@ class GroupMemberInfo(betterproto.Message):
     nick: str = betterproto.string_field(3)
     age: int = betterproto.uint32_field(4)
     unique_title: str = betterproto.string_field(5)
-    unique_title_expire_time: int = betterproto.uint32_field(6)
+    unique_title_expire_time: int = betterproto.uint64_field(6)
     card: str = betterproto.string_field(7)
     join_time: int = betterproto.uint64_field(8)
     last_active_time: int = betterproto.uint64_field(9)
     level: int = betterproto.uint32_field(10)
-    shut_up_timestamp: int = betterproto.uint64_field(11)
+    shut_up_time: int = betterproto.uint64_field(11)
     distance: Optional[int] = betterproto.uint32_field(100, optional=True, group="_distance")
     honors: List[int] = betterproto.uint32_field(101)
     unfriendly: Optional[bool] = betterproto.bool_field(102, optional=True, group="_unfriendly")
