@@ -183,7 +183,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return Share("share", {"url": url, "title": title, "content": content, "image": image_url})
 
     @staticmethod
-    def market_face(id_: int) -> "MarketFace":
+    def market_face(id_: str) -> "MarketFace":
         return MarketFace("market_face", {"id": id_})
 
     @staticmethod
@@ -396,7 +396,7 @@ class Gift(MessageSegment, element_type=ElementElementType.GIFT):
 
 
 class MarketFaceData(TypedDict):
-    id: int
+    id: str
 
 
 @dataclass
