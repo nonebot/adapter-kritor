@@ -293,6 +293,25 @@ class GetGroupHonorResponse(betterproto.Message):
     group_honors_info: List["GroupHonorInfo"] = betterproto.message_field(1)
 
 
+@dataclass(eq=False, repr=False)
+class UploadGroupFileRequest(betterproto.Message):
+    group_id: str = betterproto.string_field(1)
+    file: str = betterproto.string_field(2)
+    name: str = betterproto.string_field(3)
+    folder: Optional[str] = betterproto.string_field(4, optional=True, group="_folder")
+
+
+@dataclass(eq=False, repr=False)
+class UploadGroupFileResponse(betterproto.Message):
+    file_id: str = betterproto.string_field(1)
+    file_url: str = betterproto.string_field(2)
+    file_name: Optional[str] = betterproto.string_field(3, optional=True, group="_file_name")
+    file_size: Optional[str] = betterproto.string_field(4, optional=True, group="_file_size")
+    file_bizid: Optional[str] = betterproto.string_field(5, optional=True, group="_file_bizid")
+    file_sha: Optional[str] = betterproto.string_field(6, optional=True, group="_file_sha")
+    file_md5: Optional[str] = betterproto.string_field(7, optional=True, group="_file_md5")
+
+
 class GroupServiceStub(betterproto.ServiceStub):
     async def ban_member(
         self,
@@ -600,6 +619,23 @@ class GroupServiceStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
+    async def upload_group_file(
+        self,
+        upload_group_file_request: "UploadGroupFileRequest",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None,
+    ) -> "UploadGroupFileResponse":
+        return await self._unary_unary(
+            "/kritor.group.GroupService/UploadGroupFile",
+            upload_group_file_request,
+            UploadGroupFileResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
 
 class GroupServiceBase(ServiceBase):
 
@@ -673,6 +709,9 @@ class GroupServiceBase(ServiceBase):
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def get_group_honor(self, get_group_honor_request: "GetGroupHonorRequest") -> "GetGroupHonorResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def upload_group_file(self, upload_group_file_request: "UploadGroupFileRequest") -> "UploadGroupFileResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_ban_member(self, stream: "grpclib.server.Stream[BanMemberRequest, BanMemberResponse]") -> None:
@@ -805,6 +844,14 @@ class GroupServiceBase(ServiceBase):
         response = await self.get_group_honor(request)
         await stream.send_message(response)
 
+    async def __rpc_upload_group_file(
+        self,
+        stream: "grpclib.server.Stream[UploadGroupFileRequest, UploadGroupFileResponse]",
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.upload_group_file(request)
+        await stream.send_message(response)
+
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
         return {
             "/kritor.group.GroupService/BanMember": grpclib.const.Handler(
@@ -914,5 +961,11 @@ class GroupServiceBase(ServiceBase):
                 grpclib.const.Cardinality.UNARY_UNARY,
                 GetGroupHonorRequest,
                 GetGroupHonorResponse,
+            ),
+            "/kritor.group.GroupService/UploadGroupFile": grpclib.const.Handler(
+                self.__rpc_upload_group_file,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                UploadGroupFileRequest,
+                UploadGroupFileResponse,
             ),
         }

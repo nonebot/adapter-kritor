@@ -151,7 +151,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
             type_: 戳一戳类型
             strength: 戳一戳强度
         """
-        return Poke("poke", {"id": id_, "type": type_, "strength": strength})
+        return Poke("poke", {"id": id_, "poke_type": type_, "strength": strength})
 
     @staticmethod
     def music(
@@ -266,7 +266,7 @@ class ImageData(TypedDict):
     file_path: NotRequired[str]
     file_url: NotRequired[str]
     file_md5: NotRequired[str]
-    type: NotRequired[ImageElementImageType]
+    file_type: NotRequired[ImageElementImageType]
     sub_type: NotRequired[int]
 
 
@@ -323,7 +323,7 @@ class Dice(MessageSegment, element_type=ElementElementType.DICE):
 
 class PokeData(TypedDict):
     id: int
-    type: int
+    poke_type: int
     strength: int
 
 

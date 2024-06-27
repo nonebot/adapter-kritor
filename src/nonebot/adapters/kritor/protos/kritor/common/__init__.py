@@ -159,7 +159,7 @@ class ImageElement(betterproto.Message):
     file_url: str = betterproto.string_field(4, group="data")
     file_md5: Optional[str] = betterproto.string_field(5, optional=True, group="_file_md5")
     sub_type: Optional[int] = betterproto.uint32_field(6, optional=True, group="_sub_type")
-    type: Optional["ImageElementImageType"] = betterproto.enum_field(10, optional=True, group="_type")
+    file_type: Optional["ImageElementImageType"] = betterproto.enum_field(10, optional=True, group="_file_type")
 
 
 @dataclass(eq=False, repr=False)
@@ -199,7 +199,7 @@ class RpsElement(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class PokeElement(betterproto.Message):
     id: int = betterproto.uint32_field(1)
-    type: int = betterproto.uint32_field(2)
+    poke_type: int = betterproto.uint32_field(2)
     strength: int = betterproto.uint32_field(3)
 
 

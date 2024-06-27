@@ -56,8 +56,10 @@ from .protos.kritor.friend import (
     GetFriendListRequest,
     SetProfileCardRequest,
     IsBlackListUserRequest,
+    PrivateChatFileRequest,
     GetFriendProfileCardRequest,
     GetStrangerProfileCardRequest,
+    UploadPrivateChatFileResponse,
 )
 from .protos.kritor.guild import (
     GuildServiceStub,
@@ -104,8 +106,10 @@ from .protos.kritor.group import (
     GetGroupHonorRequest,
     SetGroupAdminRequest,
     ModifyGroupNameRequest,
+    UploadGroupFileRequest,
     ModifyMemberCardRequest,
     SetGroupWholeBanRequest,
+    UploadGroupFileResponse,
     ModifyGroupRemarkRequest,
     GetGroupMemberInfoRequest,
     GetGroupMemberListRequest,
@@ -668,6 +672,64 @@ class Bot(BaseBot):
 
         return await self.service.message.get_history_message_by_seq(
             GetHistoryMessageBySeqRequest(contact=contact.dump(), start_message_seq=start_message_seq, count=count)
+        )
+
+    @API
+    async def upload_private_file(
+        self,
+        *,
+        user_id: Union[int, str, Contact],
+        path: Union[str, Path],
+        name: Optional[str] = None,
+    ) -> UploadPrivateChatFileResponse:
+        """上传私聊文件
+
+        参数:
+            user_id: 用户ID
+            path: 文件路径
+            name: 文件名
+        """
+        if isinstance(user_id, Contact):
+            if user_id.type != SceneType.FRIEND:
+                raise ValueError("Contact must be FRIEND")
+            _user_id = user_id.id
+        else:
+            _user_id = str(user_id)
+        file = Path(path).resolve().absolute()
+        if not name:
+            name = file.name
+        return await self.service.friend.upload_private_file(
+            PrivateChatFileRequest(user_id=_user_id, file=file.as_posix(), name=name)
+        )
+
+    @API
+    async def upload_group_file(
+        self,
+        *,
+        group_id: Union[int, str, Contact],
+        path: Union[str, Path],
+        name: Optional[str] = None,
+        folder_id: Optional[str] = None,
+    ) -> UploadGroupFileResponse:
+        """上传群文件
+
+        参数:
+            group_id: 群ID
+            path: 文件路径
+            name: 文件名
+            folder_id: 文件夹ID
+        """
+        if isinstance(group_id, Contact):
+            if group_id.type != SceneType.GROUP:
+                raise ValueError("Contact must be GROUP")
+            _group_id = group_id.id
+        else:
+            _group_id = str(group_id)
+        file = Path(path).resolve().absolute()
+        if not name:
+            name = file.name
+        return await self.service.group.upload_group_file(
+            UploadGroupFileRequest(group_id=_group_id, file=file.as_posix(), name=name, folder=folder_id)
         )
 
     @API

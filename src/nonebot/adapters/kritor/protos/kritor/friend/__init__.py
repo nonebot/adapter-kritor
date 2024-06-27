@@ -150,6 +150,24 @@ class GetUinByUidResponse(betterproto.Message):
     uin_map: Dict[str, int] = betterproto.map_field(1, betterproto.TYPE_STRING, betterproto.TYPE_UINT64)
 
 
+@dataclass(eq=False, repr=False)
+class PrivateChatFileRequest(betterproto.Message):
+    user_id: str = betterproto.string_field(1)
+    file: str = betterproto.string_field(2)
+    name: str = betterproto.string_field(3)
+
+
+@dataclass(eq=False, repr=False)
+class UploadPrivateChatFileResponse(betterproto.Message):
+    file_id: str = betterproto.string_field(1)
+    file_url: str = betterproto.string_field(2)
+    file_name: Optional[str] = betterproto.string_field(3, optional=True, group="_file_name")
+    file_size: Optional[str] = betterproto.string_field(4, optional=True, group="_file_size")
+    file_bizid: Optional[str] = betterproto.string_field(5, optional=True, group="_file_bizid")
+    file_sha: Optional[str] = betterproto.string_field(6, optional=True, group="_file_sha")
+    file_md5: Optional[str] = betterproto.string_field(7, optional=True, group="_file_md5")
+
+
 class FriendServiceStub(betterproto.ServiceStub):
     async def get_friend_list(
         self,
@@ -287,6 +305,23 @@ class FriendServiceStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
+    async def upload_private_file(
+        self,
+        private_chat_file_request: "PrivateChatFileRequest",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None,
+    ) -> "UploadPrivateChatFileResponse":
+        return await self._unary_unary(
+            "/kritor.friend.FriendService/UploadPrivateFile",
+            private_chat_file_request,
+            UploadPrivateChatFileResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
 
 class FriendServiceBase(ServiceBase):
 
@@ -318,6 +353,11 @@ class FriendServiceBase(ServiceBase):
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def get_uin_by_uid(self, get_uin_by_uid_request: "GetUinByUidRequest") -> "GetUinByUidResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def upload_private_file(
+        self, private_chat_file_request: "PrivateChatFileRequest"
+    ) -> "UploadPrivateChatFileResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_get_friend_list(
@@ -379,6 +419,14 @@ class FriendServiceBase(ServiceBase):
         response = await self.get_uin_by_uid(request)
         await stream.send_message(response)
 
+    async def __rpc_upload_private_file(
+        self,
+        stream: "grpclib.server.Stream[PrivateChatFileRequest, UploadPrivateChatFileResponse]",
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.upload_private_file(request)
+        await stream.send_message(response)
+
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
         return {
             "/kritor.friend.FriendService/GetFriendList": grpclib.const.Handler(
@@ -428,5 +476,11 @@ class FriendServiceBase(ServiceBase):
                 grpclib.const.Cardinality.UNARY_UNARY,
                 GetUinByUidRequest,
                 GetUinByUidResponse,
+            ),
+            "/kritor.friend.FriendService/UploadPrivateFile": grpclib.const.Handler(
+                self.__rpc_upload_private_file,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                PrivateChatFileRequest,
+                UploadPrivateChatFileResponse,
             ),
         }
