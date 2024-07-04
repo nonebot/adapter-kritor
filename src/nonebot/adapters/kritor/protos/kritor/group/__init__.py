@@ -295,7 +295,7 @@ class GetGroupHonorResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class UploadGroupFileRequest(betterproto.Message):
-    group_id: str = betterproto.string_field(1)
+    group_id: int = betterproto.uint64_field(1)
     file: str = betterproto.string_field(2)
     name: str = betterproto.string_field(3)
     folder: Optional[str] = betterproto.string_field(4, optional=True, group="_folder")

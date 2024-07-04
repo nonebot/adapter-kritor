@@ -715,12 +715,11 @@ class PrivateFileUploadedNotice(NoticeEvent):
     operator_uid: str
     operator_uin: int
     file_id: str
-    file_sub_id: str
+    file_sub_id: int
     file_name: str
     file_size: int
     expire_time: datetime
-    biz: int
-    url: str
+    file_url: str
 
     @override
     def get_event_description(self) -> str:
@@ -747,12 +746,11 @@ class GroupFileUploadedNotice(NoticeEvent):
     operator_uid: str
     operator_uin: int
     file_id: str
-    file_sub_id: str
+    file_sub_id: int
     file_name: str
     file_size: int
     expire_time: datetime
-    biz: int
-    url: str
+    file_url: str
 
     @override
     def get_event_description(self) -> str:

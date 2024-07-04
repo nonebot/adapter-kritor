@@ -90,11 +90,11 @@ class PrivateFileUploadedNotice(betterproto.Message):
     operator_uid: str = betterproto.string_field(1)
     operator_uin: int = betterproto.uint64_field(2)
     file_id: str = betterproto.string_field(3)
-    file_sub_id: str = betterproto.string_field(4)
+    file_sub_id: int = betterproto.int32_field(4)
     file_name: str = betterproto.string_field(5)
     file_size: int = betterproto.uint64_field(6)
     expire_time: int = betterproto.uint64_field(7)
-    url: str = betterproto.string_field(8)
+    file_url: str = betterproto.string_field(8)
 
 
 @dataclass(eq=False, repr=False)
@@ -128,7 +128,7 @@ class GroupFileUploadedNotice(betterproto.Message):
     file_id: str = betterproto.string_field(4)
     file_name: str = betterproto.string_field(5)
     file_size: int = betterproto.uint64_field(6)
-    bus_id: int = betterproto.int32_field(7)
+    file_sub_id: int = betterproto.int32_field(7)
     expire_time: int = betterproto.uint64_field(8)
     file_url: str = betterproto.string_field(9)
 

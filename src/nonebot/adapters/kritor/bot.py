@@ -722,9 +722,9 @@ class Bot(BaseBot):
         if isinstance(group_id, Contact):
             if group_id.type != SceneType.GROUP:
                 raise ValueError("Contact must be GROUP")
-            _group_id = group_id.id
+            _group_id = int(group_id.id)
         else:
-            _group_id = str(group_id)
+            _group_id = int(group_id)
         file = Path(path).resolve().absolute()
         if not name:
             name = file.name
