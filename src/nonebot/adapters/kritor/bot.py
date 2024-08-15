@@ -1341,7 +1341,7 @@ class Bot(BaseBot):
     async def set_profile_card(
         self,
         *,
-        nick_name: Optional[str] = None,
+        nick: Optional[str] = None,
         company: Optional[str] = None,
         email: Optional[str] = None,
         college: Optional[str] = None,
@@ -1352,7 +1352,7 @@ class Bot(BaseBot):
         """设置个人名片
 
         参数:
-            nick_name: 昵称
+            nick: 昵称
             company: 公司
             email: 邮箱
             college: 学校
@@ -1362,7 +1362,7 @@ class Bot(BaseBot):
         """
         await self.service.friend.set_profile_card(
             SetProfileCardRequest(
-                nick_name=nick_name,
+                nick=nick,
                 company=company,
                 email=email,
                 college=college,

@@ -93,7 +93,7 @@ class GetStrangerProfileCardResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class SetProfileCardRequest(betterproto.Message):
-    nick_name: Optional[str] = betterproto.string_field(1, optional=True, group="_nick_name")
+    nick: Optional[str] = betterproto.string_field(1, optional=True, group="_nick")
     company: Optional[str] = betterproto.string_field(2, optional=True, group="_company")
     email: Optional[str] = betterproto.string_field(3, optional=True, group="_email")
     college: Optional[str] = betterproto.string_field(4, optional=True, group="_college")

@@ -709,6 +709,79 @@ class GroupReactMessageWithEmojiNotice(NoticeEvent):
         return False
 
 
+class GroupTransferNotice(NoticeEvent):
+    __type__: Literal["group_transfer"] = "group_transfer"
+
+    group_id: int
+    operator_uid: str
+    operator_uin: int
+    target_uid: str
+    target_uin: int
+
+    @override
+    def get_event_description(self) -> str:
+        text = f"Group {self.group_id} transfer to {self.target_uid or self.target_uin} by {self.operator_uid or self.operator_uin}"
+        return escape_tag(text)
+
+    @override
+    def get_user_id(self) -> str:
+        return f"{self.target_uin or self.target_uid}"
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.group_id}_{self.target_uin or self.target_uid}"
+
+
+class FriendIncreaseNotice(NoticeEvent):
+    __type__: Literal["friend_increase"] = "friend_increase"
+
+    friend_uid: str
+    friend_uin: int
+    friend_nick: Optional[str]
+
+    @override
+    def get_event_description(self) -> str:
+        text = f"Friend {self.friend_nick or ''}({self.friend_uid or self.friend_uin}) added you"
+        return escape_tag(text)
+
+    @override
+    def get_user_id(self) -> str:
+        return f"{self.friend_uin or self.friend_uid}"
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.friend_uin or self.friend_uid}"
+
+    @override
+    def is_tome(self) -> bool:
+        return True
+
+
+class FriendDecreaseNotice(NoticeEvent):
+    __type__: Literal["friend_decrease"] = "friend_decrease"
+
+    friend_uid: str
+    friend_uin: int
+    friend_nick: Optional[str]
+
+    @override
+    def get_event_description(self) -> str:
+        text = f"Friend {self.friend_nick or ''}({self.friend_uid or self.friend_uin}) removed you"
+        return escape_tag(text)
+
+    @override
+    def get_user_id(self) -> str:
+        return f"{self.friend_uin or self.friend_uid}"
+
+    @override
+    def get_session_id(self) -> str:
+        return f"{self.friend_uin or self.friend_uid}"
+
+    @override
+    def is_tome(self) -> bool:
+        return True
+
+
 class PrivateFileUploadedNotice(NoticeEvent):
     __type__: Literal["private_file_uploaded"] = "private_file_uploaded"
 

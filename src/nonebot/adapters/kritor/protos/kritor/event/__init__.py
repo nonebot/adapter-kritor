@@ -52,6 +52,9 @@ class NoticeEventNoticeType(betterproto.Enum):
     GROUP_MEMBER_BAN = 30
     GROUP_WHOLE_BAN = 31
     GROUP_REACT_MESSAGE_WITH_EMOJI = 32
+    GROUP_TRANSFER = 33
+    FRIEND_INCREASE = 40
+    FRIEND_DECREASE = 41
 
 
 class RequestEventRequestType(betterproto.Enum):
@@ -227,6 +230,29 @@ class GroupReactMessageWithEmojiNotice(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
+class GroupTransferNotice(betterproto.Message):
+    group_id: int = betterproto.uint64_field(1)
+    operator_uid: str = betterproto.string_field(2)
+    operator_uin: int = betterproto.uint64_field(3)
+    target_uid: str = betterproto.string_field(4)
+    target_uin: int = betterproto.uint64_field(5)
+
+
+@dataclass(eq=False, repr=False)
+class FriendIncreasedNotice(betterproto.Message):
+    friend_uid: str = betterproto.string_field(1)
+    friend_uin: int = betterproto.uint64_field(2)
+    friend_nick: Optional[str] = betterproto.string_field(3, optional=True, group="_friend_nick")
+
+
+@dataclass(eq=False, repr=False)
+class FriendDecreasedNotice(betterproto.Message):
+    friend_uid: str = betterproto.string_field(1)
+    friend_uin: int = betterproto.uint64_field(2)
+    friend_nick: Optional[str] = betterproto.string_field(3, optional=True, group="_friend_nick")
+
+
+@dataclass(eq=False, repr=False)
 class NoticeEvent(betterproto.Message):
     type: "NoticeEventNoticeType" = betterproto.enum_field(1)
     time: int = betterproto.uint64_field(2)
@@ -247,6 +273,9 @@ class NoticeEvent(betterproto.Message):
     group_member_ban: "GroupMemberBanNotice" = betterproto.message_field(30, group="notice")
     group_whole_ban: "GroupWholeBanNotice" = betterproto.message_field(31, group="notice")
     group_react_message_with_emoji: "GroupReactMessageWithEmojiNotice" = betterproto.message_field(32, group="notice")
+    group_transfer: "GroupTransferNotice" = betterproto.message_field(33, group="notice")
+    friend_increase: "FriendIncreasedNotice" = betterproto.message_field(40, group="notice")
+    friend_decrease: "FriendDecreasedNotice" = betterproto.message_field(41, group="notice")
 
 
 @dataclass(eq=False, repr=False)
