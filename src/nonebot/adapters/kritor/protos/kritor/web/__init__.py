@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 @dataclass(eq=False, repr=False)
 class GetCookiesRequest(betterproto.Message):
-    domain: Optional[str] = betterproto.string_field(1, optional=True, group="_domain")
+    domain: Optional[str] = betterproto.string_field(1, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -28,7 +28,7 @@ class GetCookiesResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class GetCredentialsRequest(betterproto.Message):
-    domain: Optional[str] = betterproto.string_field(1, optional=True, group="_domain")
+    domain: Optional[str] = betterproto.string_field(1, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -39,7 +39,7 @@ class GetCredentialsResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class GetCsrfTokenRequest(betterproto.Message):
-    domain: Optional[str] = betterproto.string_field(1, optional=True, group="_domain")
+    domain: Optional[str] = betterproto.string_field(1, optional=True)
 
 
 @dataclass(eq=False, repr=False)

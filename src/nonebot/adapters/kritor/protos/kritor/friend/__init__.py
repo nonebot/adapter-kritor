@@ -18,50 +18,55 @@ if TYPE_CHECKING:
 
 @dataclass(eq=False, repr=False)
 class FriendInfo(betterproto.Message):
-    uid: str = betterproto.string_field(1)
+    uid: Optional[str] = betterproto.string_field(1, optional=True)
     uin: int = betterproto.uint64_field(2)
     qid: str = betterproto.string_field(3)
     nick: str = betterproto.string_field(4)
     remark: str = betterproto.string_field(5)
-    level: int = betterproto.uint32_field(6)
-    age: int = betterproto.uint32_field(7)
-    vote_cnt: int = betterproto.uint32_field(8)
-    gender: int = betterproto.int32_field(9)
-    group_id: int = betterproto.int32_field(10)
-    ext: Optional["ExtInfo"] = betterproto.message_field(99, optional=True, group="_ext")
+    level: Optional[int] = betterproto.uint32_field(6, optional=True)
+    age: Optional[int] = betterproto.uint32_field(7, optional=True)
+    vote_cnt: Optional[int] = betterproto.uint32_field(8, optional=True)
+    gender: Optional[int] = betterproto.int32_field(9, optional=True)
+    friend_group_id: int = betterproto.int32_field(10)
+    ext: Optional["ExtInfo"] = betterproto.message_field(99, optional=True)
 
 
 @dataclass(eq=False, repr=False)
 class ProfileCard(betterproto.Message):
-    uid: str = betterproto.string_field(1)
+    uid: Optional[str] = betterproto.string_field(1, optional=True)
     uin: int = betterproto.uint64_field(2)
     qid: str = betterproto.string_field(3)
     nick: str = betterproto.string_field(4)
-    remark: Optional[str] = betterproto.string_field(5, optional=True, group="_remark")
+    remark: Optional[str] = betterproto.string_field(5, optional=True)
     level: int = betterproto.uint32_field(6)
-    birthday: Optional[int] = betterproto.uint64_field(7, optional=True, group="_birthday")
+    birthday: Optional[int] = betterproto.uint64_field(7, optional=True)
     login_day: int = betterproto.uint32_field(8)
     vote_cnt: int = betterproto.uint32_field(9)
-    is_school_verified: Optional[bool] = betterproto.bool_field(51, optional=True, group="_is_school_verified")
+    is_school_verified: Optional[bool] = betterproto.bool_field(51, optional=True)
     """以下字段可以不实现"""
 
-    ext: Optional["ExtInfo"] = betterproto.message_field(99, optional=True, group="_ext")
+    ext: Optional["ExtInfo"] = betterproto.message_field(99, optional=True)
 
 
 @dataclass(eq=False, repr=False)
 class ExtInfo(betterproto.Message):
-    """通用好友信息扩展字段 所有第三方协议分发扩展字段， 必须基于本字段修改， 并保存定制的副本到本仓库特定路径！！"""
+    """
+    通用好友信息扩展字段
+     所有第三方协议分发扩展字段，
+     必须基于本字段修改，
+     并保存定制的副本到本仓库特定路径！！
+    """
 
-    big_vip: Optional[bool] = betterproto.bool_field(1, optional=True, group="_big_vip")
-    hollywood_vip: Optional[bool] = betterproto.bool_field(2, optional=True, group="_hollywood_vip")
-    qq_vip: Optional[bool] = betterproto.bool_field(3, optional=True, group="_qq_vip")
-    super_vip: Optional[bool] = betterproto.bool_field(4, optional=True, group="_super_vip")
-    voted: Optional[bool] = betterproto.bool_field(5, optional=True, group="_voted")
+    big_vip: Optional[bool] = betterproto.bool_field(1, optional=True)
+    hollywood_vip: Optional[bool] = betterproto.bool_field(2, optional=True)
+    qq_vip: Optional[bool] = betterproto.bool_field(3, optional=True)
+    super_vip: Optional[bool] = betterproto.bool_field(4, optional=True)
+    voted: Optional[bool] = betterproto.bool_field(5, optional=True)
 
 
 @dataclass(eq=False, repr=False)
 class GetFriendListRequest(betterproto.Message):
-    refresh: Optional[bool] = betterproto.bool_field(1, optional=True, group="_refresh")
+    refresh: Optional[bool] = betterproto.bool_field(1, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -93,13 +98,13 @@ class GetStrangerProfileCardResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class SetProfileCardRequest(betterproto.Message):
-    nick: Optional[str] = betterproto.string_field(1, optional=True, group="_nick")
-    company: Optional[str] = betterproto.string_field(2, optional=True, group="_company")
-    email: Optional[str] = betterproto.string_field(3, optional=True, group="_email")
-    college: Optional[str] = betterproto.string_field(4, optional=True, group="_college")
-    personal_note: Optional[str] = betterproto.string_field(5, optional=True, group="_personal_note")
-    birthday: Optional[int] = betterproto.uint32_field(6, optional=True, group="_birthday")
-    age: Optional[int] = betterproto.uint32_field(7, optional=True, group="_age")
+    nick: Optional[str] = betterproto.string_field(1, optional=True)
+    company: Optional[str] = betterproto.string_field(2, optional=True)
+    email: Optional[str] = betterproto.string_field(3, optional=True)
+    college: Optional[str] = betterproto.string_field(4, optional=True)
+    personal_note: Optional[str] = betterproto.string_field(5, optional=True)
+    birthday: Optional[int] = betterproto.uint32_field(6, optional=True)
+    age: Optional[int] = betterproto.uint32_field(7, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -152,20 +157,21 @@ class GetUinByUidResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class PrivateChatFileRequest(betterproto.Message):
-    user_id: str = betterproto.string_field(1)
-    file: str = betterproto.string_field(2)
-    name: str = betterproto.string_field(3)
+    target_uid: str = betterproto.string_field(1)
+    target_uin: int = betterproto.uint64_field(2)
+    file: str = betterproto.string_field(3)
+    name: str = betterproto.string_field(4)
 
 
 @dataclass(eq=False, repr=False)
 class UploadPrivateChatFileResponse(betterproto.Message):
     file_id: str = betterproto.string_field(1)
     file_url: str = betterproto.string_field(2)
-    file_name: Optional[str] = betterproto.string_field(3, optional=True, group="_file_name")
-    file_size: Optional[str] = betterproto.string_field(4, optional=True, group="_file_size")
-    file_bizid: Optional[str] = betterproto.string_field(5, optional=True, group="_file_bizid")
-    file_sha: Optional[str] = betterproto.string_field(6, optional=True, group="_file_sha")
-    file_md5: Optional[str] = betterproto.string_field(7, optional=True, group="_file_md5")
+    file_name: Optional[str] = betterproto.string_field(3, optional=True)
+    file_size: Optional[str] = betterproto.string_field(4, optional=True)
+    file_bizid: Optional[str] = betterproto.string_field(5, optional=True)
+    file_sha: Optional[str] = betterproto.string_field(6, optional=True)
+    file_md5: Optional[str] = betterproto.string_field(7, optional=True)
 
 
 class FriendServiceStub(betterproto.ServiceStub):

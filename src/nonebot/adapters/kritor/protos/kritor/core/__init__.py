@@ -29,12 +29,12 @@ class GetVersionResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class DownloadFileRequest(betterproto.Message):
-    url: Optional[str] = betterproto.string_field(1, optional=True, group="_url")
-    base64: Optional[str] = betterproto.string_field(2, optional=True, group="_base64")
-    root_path: Optional[str] = betterproto.string_field(3, optional=True, group="_root_path")
-    file_name: Optional[str] = betterproto.string_field(4, optional=True, group="_file_name")
-    thread_cnt: Optional[int] = betterproto.uint32_field(5, optional=True, group="_thread_cnt")
-    headers: Optional[str] = betterproto.string_field(6, optional=True, group="_headers")
+    url: Optional[str] = betterproto.string_field(1, optional=True)
+    base64: Optional[str] = betterproto.string_field(2, optional=True)
+    root_path: Optional[str] = betterproto.string_field(3, optional=True)
+    file_name: Optional[str] = betterproto.string_field(4, optional=True)
+    thread_cnt: Optional[int] = betterproto.uint32_field(5, optional=True)
+    headers: Dict[str, str] = betterproto.map_field(6, betterproto.TYPE_STRING, betterproto.TYPE_STRING)
 
 
 @dataclass(eq=False, repr=False)
@@ -50,7 +50,7 @@ class GetCurrentAccountRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class GetCurrentAccountResponse(betterproto.Message):
-    account_uid: str = betterproto.string_field(1)
+    account_uid: Optional[str] = betterproto.string_field(1, optional=True)
     account_uin: int = betterproto.uint64_field(2)
     account_name: str = betterproto.string_field(3)
 

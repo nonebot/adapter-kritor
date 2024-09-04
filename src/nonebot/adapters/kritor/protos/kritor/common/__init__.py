@@ -79,15 +79,31 @@ class ResponseResponseCode(betterproto.Enum):
 class Contact(betterproto.Message):
     scene: "Scene" = betterproto.enum_field(1)
     peer: str = betterproto.string_field(2)
-    sub_peer: Optional[str] = betterproto.string_field(3, optional=True, group="_sub_peer")
+    sub_peer: Optional[str] = betterproto.string_field(3, optional=True)
 
 
 @dataclass(eq=False, repr=False)
-class Sender(betterproto.Message):
-    uid: str = betterproto.string_field(1)
-    uin: Optional[int] = betterproto.uint64_field(2, optional=True, group="_uin")
-    nick: Optional[str] = betterproto.string_field(3, optional=True, group="_nick")
-    role: Optional["Role"] = betterproto.enum_field(4, optional=True, group="_role")
+class PrivateSender(betterproto.Message):
+    uid: Optional[str] = betterproto.string_field(1, optional=True)
+    uin: int = betterproto.uint64_field(2)
+    nick: str = betterproto.string_field(3)
+
+
+@dataclass(eq=False, repr=False)
+class GroupSender(betterproto.Message):
+    group_id: str = betterproto.string_field(1)
+    uid: Optional[str] = betterproto.string_field(2, optional=True)
+    uin: int = betterproto.uint64_field(3)
+    nick: str = betterproto.string_field(4)
+
+
+@dataclass(eq=False, repr=False)
+class GuildSender(betterproto.Message):
+    guild_id: str = betterproto.string_field(1)
+    channel_id: str = betterproto.string_field(2)
+    tiny_id: str = betterproto.string_field(3)
+    nick: str = betterproto.string_field(4)
+    role: "Role" = betterproto.enum_field(5)
 
 
 @dataclass(eq=False, repr=False)
@@ -129,15 +145,15 @@ class TextElement(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class AtElement(betterproto.Message):
-    uid: str = betterproto.string_field(1)
-    uin: Optional[int] = betterproto.uint64_field(2, optional=True, group="_uin")
+    uid: Optional[str] = betterproto.string_field(1, optional=True)
+    uin: Optional[int] = betterproto.uint64_field(2, optional=True)
 
 
 @dataclass(eq=False, repr=False)
 class FaceElement(betterproto.Message):
     id: int = betterproto.uint32_field(1)
-    is_big: Optional[bool] = betterproto.bool_field(2, optional=True, group="_is_big")
-    result: Optional[int] = betterproto.uint32_field(3, optional=True, group="_result")
+    is_big: Optional[bool] = betterproto.bool_field(2, optional=True)
+    result: Optional[int] = betterproto.uint32_field(3, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -157,9 +173,9 @@ class ImageElement(betterproto.Message):
     file_name: str = betterproto.string_field(2, group="data")
     file_path: str = betterproto.string_field(3, group="data")
     file_url: str = betterproto.string_field(4, group="data")
-    file_md5: Optional[str] = betterproto.string_field(5, optional=True, group="_file_md5")
-    sub_type: Optional[int] = betterproto.uint32_field(6, optional=True, group="_sub_type")
-    file_type: Optional["ImageElementImageType"] = betterproto.enum_field(10, optional=True, group="_file_type")
+    file_md5: Optional[str] = betterproto.string_field(5, optional=True)
+    sub_type: Optional[int] = betterproto.uint32_field(6, optional=True)
+    file_type: Optional["ImageElementImageType"] = betterproto.enum_field(10, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -168,8 +184,8 @@ class VoiceElement(betterproto.Message):
     file_name: str = betterproto.string_field(2, group="data")
     file_path: str = betterproto.string_field(3, group="data")
     file_url: str = betterproto.string_field(4, group="data")
-    file_md5: Optional[str] = betterproto.string_field(5, optional=True, group="_file_md5")
-    magic: Optional[bool] = betterproto.bool_field(6, optional=True, group="_magic")
+    file_md5: Optional[str] = betterproto.string_field(5, optional=True)
+    magic: Optional[bool] = betterproto.bool_field(6, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -178,7 +194,7 @@ class VideoElement(betterproto.Message):
     file_name: str = betterproto.string_field(2, group="data")
     file_path: str = betterproto.string_field(3, group="data")
     file_url: str = betterproto.string_field(4, group="data")
-    file_md5: Optional[str] = betterproto.string_field(5, optional=True, group="_file_md5")
+    file_md5: Optional[str] = betterproto.string_field(5, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -278,13 +294,13 @@ class XmlElement(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class FileElement(betterproto.Message):
-    name: Optional[str] = betterproto.string_field(1, optional=True, group="_name")
-    size: Optional[int] = betterproto.uint64_field(2, optional=True, group="_size")
-    expire_time: Optional[int] = betterproto.uint64_field(3, optional=True, group="_expire_time")
-    id: Optional[str] = betterproto.string_field(4, optional=True, group="_id")
-    url: Optional[str] = betterproto.string_field(5, optional=True, group="_url")
-    biz: Optional[int] = betterproto.int32_field(6, optional=True, group="_biz")
-    sub_id: Optional[str] = betterproto.string_field(7, optional=True, group="_sub_id")
+    name: Optional[str] = betterproto.string_field(1, optional=True)
+    size: Optional[int] = betterproto.uint64_field(2, optional=True)
+    expire_time: Optional[int] = betterproto.uint64_field(3, optional=True)
+    id: Optional[str] = betterproto.string_field(4, optional=True)
+    url: Optional[str] = betterproto.string_field(5, optional=True)
+    biz: Optional[int] = betterproto.int32_field(6, optional=True)
+    sub_id: Optional[str] = betterproto.string_field(7, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -338,10 +354,18 @@ class KeyboardElement(betterproto.Message):
 class PushMessageBody(betterproto.Message):
     time: int = betterproto.uint64_field(1)
     message_id: str = betterproto.string_field(2)
+    """
+    消息 id
+     长度 |           1           |        20         |    20    |
+     内容 | 群聊为 'g' 私聊为 'p' | 群 uin 或好友 uin | 消息 Seq |
+    """
+
     message_seq: int = betterproto.uint64_field(3)
-    contact: "Contact" = betterproto.message_field(4)
-    sender: "Sender" = betterproto.message_field(5)
-    elements: List["Element"] = betterproto.message_field(6)
+    scene: "Scene" = betterproto.enum_field(4)
+    private: "PrivateSender" = betterproto.message_field(5, group="sender")
+    group: "GroupSender" = betterproto.message_field(6, group="sender")
+    guild: "GuildSender" = betterproto.message_field(7, group="sender")
+    elements: List["Element"] = betterproto.message_field(9)
 
 
 @dataclass(eq=False, repr=False)
@@ -353,10 +377,10 @@ class ForwardMessageBody(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class EssenceMessageBody(betterproto.Message):
     group_id: int = betterproto.uint32_field(1)
-    sender_uid: str = betterproto.string_field(2)
+    sender_uid: Optional[str] = betterproto.string_field(2, optional=True)
     sender_uin: int = betterproto.uint64_field(3)
     sender_nick: str = betterproto.string_field(4)
-    operator_uid: int = betterproto.uint64_field(5)
+    operator_uid: Optional[int] = betterproto.uint64_field(5, optional=True)
     operator_uin: int = betterproto.uint64_field(6)
     operator_nick: str = betterproto.string_field(7)
     operation_time: int = betterproto.uint64_field(8)
@@ -379,5 +403,5 @@ class Response(betterproto.Message):
     cmd: str = betterproto.string_field(1)
     seq: int = betterproto.uint32_field(2)
     code: "ResponseResponseCode" = betterproto.enum_field(3)
-    msg: Optional[str] = betterproto.string_field(4, optional=True, group="_msg")
+    msg: Optional[str] = betterproto.string_field(4, optional=True)
     buf: bytes = betterproto.bytes_field(5)

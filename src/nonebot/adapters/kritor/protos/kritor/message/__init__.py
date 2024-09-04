@@ -22,12 +22,12 @@ if TYPE_CHECKING:
 class SendMessageRequest(betterproto.Message):
     contact: "_common__.Contact" = betterproto.message_field(1)
     elements: List["_common__.Element"] = betterproto.message_field(2)
-    retry_count: Optional[int] = betterproto.uint32_field(3, optional=True, group="_retry_count")
-    message_id: Optional[str] = betterproto.string_field(4, optional=True, group="_message_id")
+    retry_count: Optional[int] = betterproto.uint32_field(3, optional=True)
+    message_id: Optional[str] = betterproto.string_field(4, optional=True)
     """passive_id"""
 
-    notice_id: Optional[str] = betterproto.string_field(5, optional=True, group="_notice_id")
-    request_id: Optional[str] = betterproto.string_field(6, optional=True, group="_request_id")
+    notice_id: Optional[str] = betterproto.string_field(5, optional=True)
+    request_id: Optional[str] = betterproto.string_field(6, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -40,7 +40,7 @@ class SendMessageResponse(betterproto.Message):
 class SendMessageByResIdRequest(betterproto.Message):
     contact: "_common__.Contact" = betterproto.message_field(1)
     res_id: str = betterproto.string_field(2)
-    retry_count: Optional[int] = betterproto.uint32_field(3, optional=True, group="_retry_count")
+    retry_count: Optional[int] = betterproto.uint32_field(3, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -108,8 +108,8 @@ class GetMessageBySeqResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetHistoryMessageRequest(betterproto.Message):
     contact: "_common__.Contact" = betterproto.message_field(1)
-    start_message_id: Optional[str] = betterproto.string_field(2, optional=True, group="_start_message_id")
-    count: Optional[int] = betterproto.uint32_field(3, optional=True, group="_count")
+    start_message_id: Optional[str] = betterproto.string_field(2, optional=True)
+    count: Optional[int] = betterproto.uint32_field(3, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -120,8 +120,8 @@ class GetHistoryMessageResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetHistoryMessageBySeqRequest(betterproto.Message):
     contact: "_common__.Contact" = betterproto.message_field(1)
-    start_message_seq: Optional[int] = betterproto.uint64_field(2, optional=True, group="_start_message_seq")
-    count: Optional[int] = betterproto.uint32_field(3, optional=True, group="_count")
+    start_message_seq: Optional[int] = betterproto.uint64_field(2, optional=True)
+    count: Optional[int] = betterproto.uint32_field(3, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -133,7 +133,7 @@ class GetHistoryMessageBySeqResponse(betterproto.Message):
 class UploadForwardMessageRequest(betterproto.Message):
     contact: "_common__.Contact" = betterproto.message_field(1)
     messages: List["_common__.ForwardMessageBody"] = betterproto.message_field(2)
-    retry_count: Optional[int] = betterproto.uint32_field(3, optional=True, group="_retry_count")
+    retry_count: Optional[int] = betterproto.uint32_field(3, optional=True)
 
 
 @dataclass(eq=False, repr=False)

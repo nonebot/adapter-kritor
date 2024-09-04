@@ -120,7 +120,7 @@ class GetFileSystemInfoResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetFileListRequest(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    folder_id: Optional[str] = betterproto.string_field(2, optional=True, group="_folder_id")
+    folder_id: Optional[str] = betterproto.string_field(2, optional=True)
 
 
 @dataclass(eq=False, repr=False)

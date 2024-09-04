@@ -50,14 +50,14 @@ class NotJoinedGroupInfo(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class ProhibitedUserInfo(betterproto.Message):
-    uid: str = betterproto.string_field(1)
+    uid: Optional[str] = betterproto.string_field(1, optional=True)
     uin: int = betterproto.uint64_field(2)
     prohibited_time: int = betterproto.uint64_field(3)
 
 
 @dataclass(eq=False, repr=False)
 class GroupHonorInfo(betterproto.Message):
-    uid: str = betterproto.string_field(1)
+    uid: Optional[str] = betterproto.string_field(1, optional=True)
     uin: int = betterproto.uint64_field(2)
     nick: str = betterproto.string_field(3)
     honor_name: str = betterproto.string_field(4)
@@ -68,7 +68,7 @@ class GroupHonorInfo(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class GroupMemberInfo(betterproto.Message):
-    uid: str = betterproto.string_field(1)
+    uid: Optional[str] = betterproto.string_field(1, optional=True)
     uin: int = betterproto.uint64_field(2)
     nick: str = betterproto.string_field(3)
     age: int = betterproto.uint32_field(4)
@@ -79,10 +79,10 @@ class GroupMemberInfo(betterproto.Message):
     last_active_time: int = betterproto.uint64_field(9)
     level: int = betterproto.uint32_field(10)
     shut_up_time: int = betterproto.uint64_field(11)
-    distance: Optional[int] = betterproto.uint32_field(100, optional=True, group="_distance")
+    distance: Optional[int] = betterproto.uint32_field(100, optional=True)
     honors: List[int] = betterproto.uint32_field(101)
-    unfriendly: Optional[bool] = betterproto.bool_field(102, optional=True, group="_unfriendly")
-    card_changeable: Optional[bool] = betterproto.bool_field(103, optional=True, group="_card_changeable")
+    unfriendly: Optional[bool] = betterproto.bool_field(102, optional=True)
+    card_changeable: Optional[bool] = betterproto.bool_field(103, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -95,7 +95,7 @@ class BanMemberRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class BanMemberResponse(betterproto.Message):
-    group_id: int = betterproto.uint64_field(1)
+    pass
 
 
 @dataclass(eq=False, repr=False)
@@ -115,8 +115,8 @@ class KickMemberRequest(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
     target_uid: str = betterproto.string_field(2, group="target")
     target_uin: int = betterproto.uint64_field(3, group="target")
-    reject_add_request: Optional[bool] = betterproto.bool_field(6, optional=True, group="_reject_add_request")
-    kick_reason: Optional[str] = betterproto.string_field(5, optional=True, group="_kick_reason")
+    reject_add_request: Optional[bool] = betterproto.bool_field(6, optional=True)
+    kick_reason: Optional[str] = betterproto.string_field(5, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -218,7 +218,7 @@ class GetGroupInfoResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class GetGroupListRequest(betterproto.Message):
-    refresh: Optional[bool] = betterproto.bool_field(1, optional=True, group="_refresh")
+    refresh: Optional[bool] = betterproto.bool_field(1, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -231,7 +231,7 @@ class GetGroupMemberInfoRequest(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
     target_uid: str = betterproto.string_field(2, group="target")
     target_uin: int = betterproto.uint64_field(3, group="target")
-    refresh: Optional[bool] = betterproto.bool_field(4, optional=True, group="_refresh")
+    refresh: Optional[bool] = betterproto.bool_field(4, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -242,7 +242,7 @@ class GetGroupMemberInfoResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetGroupMemberListRequest(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    refresh: Optional[bool] = betterproto.bool_field(2, optional=True, group="_refresh")
+    refresh: Optional[bool] = betterproto.bool_field(2, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -285,7 +285,7 @@ class GetNotJoinedGroupInfoResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetGroupHonorRequest(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    refresh: Optional[bool] = betterproto.bool_field(2, optional=True, group="_refresh")
+    refresh: Optional[bool] = betterproto.bool_field(2, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -298,18 +298,18 @@ class UploadGroupFileRequest(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
     file: str = betterproto.string_field(2)
     name: str = betterproto.string_field(3)
-    folder: Optional[str] = betterproto.string_field(4, optional=True, group="_folder")
+    folder: Optional[str] = betterproto.string_field(4, optional=True)
 
 
 @dataclass(eq=False, repr=False)
 class UploadGroupFileResponse(betterproto.Message):
     file_id: str = betterproto.string_field(1)
     file_url: str = betterproto.string_field(2)
-    file_name: Optional[str] = betterproto.string_field(3, optional=True, group="_file_name")
-    file_size: Optional[str] = betterproto.string_field(4, optional=True, group="_file_size")
-    file_bizid: Optional[str] = betterproto.string_field(5, optional=True, group="_file_bizid")
-    file_sha: Optional[str] = betterproto.string_field(6, optional=True, group="_file_sha")
-    file_md5: Optional[str] = betterproto.string_field(7, optional=True, group="_file_md5")
+    file_name: Optional[str] = betterproto.string_field(3, optional=True)
+    file_size: Optional[str] = betterproto.string_field(4, optional=True)
+    file_bizid: Optional[str] = betterproto.string_field(5, optional=True)
+    file_sha: Optional[str] = betterproto.string_field(6, optional=True)
+    file_md5: Optional[str] = betterproto.string_field(7, optional=True)
 
 
 class GroupServiceStub(betterproto.ServiceStub):

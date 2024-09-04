@@ -97,7 +97,7 @@ class SignRequest(betterproto.Message):
     command: str = betterproto.string_field(2)
     seq: int = betterproto.uint32_field(3)
     buffer: bytes = betterproto.bytes_field(4)
-    qua: Optional[str] = betterproto.string_field(6, optional=True, group="_qua")
+    qua: Optional[str] = betterproto.string_field(6, optional=True)
 
 
 @dataclass(eq=False, repr=False)

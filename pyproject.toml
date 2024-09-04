@@ -6,8 +6,8 @@ authors = [
     {name = "rf_tar_railt", email = "rf_tar_railt@qq.com"},
 ]
 dependencies = [
-    "betterproto>=2.0.0b6",
     "nonebot2>=2.2.1",
+    "betterproto>=2.0.0b7",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
@@ -54,11 +54,11 @@ distribution = true
 
 [tool.pdm.dev-dependencies]
 dev = [
-    "betterproto[compiler]>=2.0.0b6",
     "black>=24.3.0",
     "isort>=5.13.2",
     "ruff>=0.3.4",
     "grpcio-tools>=1.62.1",
+    "betterproto[compiler]>=2.0.0b7",
 ]
 
 [tool.pdm.build]

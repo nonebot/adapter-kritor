@@ -1,12 +1,16 @@
 from enum import IntEnum
-from typing import Union, Literal, Optional
+from typing import Optional
+from dataclasses import dataclass
 
-from pydantic import Field, BaseModel
+from pydantic import BaseModel
 
-from .protos.kritor.common import Scene
+from .compat import field_validator
+from .protos.kritor.common import Scene as ProtoScene
 from .protos.kritor.common import Role as ProtoRole
-from .protos.kritor.common import Sender as ProtoSender
 from .protos.kritor.common import Contact as ProtoContact
+from .protos.kritor.common import GroupSender as ProtoGroupSender
+from .protos.kritor.common import GuildSender as ProtoGuildSender
+from .protos.kritor.common import PrivateSender as ProtoPrivateSender
 
 
 class SceneType(IntEnum):
@@ -20,47 +24,18 @@ class SceneType(IntEnum):
     STRANGER = 9
 
 
-class Contact(BaseModel):
-    type: SceneType = Field(..., alias="scene")
-    id: str = Field(..., alias="peer")
-    sub_id: Optional[str] = Field(None, alias="sub_peer")
+@dataclass
+class Contact:
+    type: SceneType
+    id: str
+    sub_id: Optional[str] = None
 
     def dump(self) -> ProtoContact:
         return ProtoContact(
-            scene=Scene(self.type.value),
+            scene=ProtoScene(self.type.value),
             peer=self.id,
             sub_peer=self.sub_id,
         )
-
-
-class Group(Contact):
-    type: Literal[SceneType.GROUP] = SceneType.GROUP
-
-
-class Friend(Contact):
-    type: Literal[SceneType.FRIEND] = SceneType.FRIEND
-
-
-class Guild(Contact):
-    type: Literal[SceneType.GUILD] = SceneType.GUILD
-
-
-class Stranger(Contact):
-    type: Literal[SceneType.STRANGER] = SceneType.STRANGER
-
-
-class StrangerFromGroup(Contact):
-    type: Literal[SceneType.STRANGER_FROM_GROUP] = SceneType.STRANGER_FROM_GROUP
-
-
-class Nearby(Contact):
-    type: Literal[SceneType.NEARBY] = SceneType.NEARBY
-
-
-ContactType = Union[
-    Union[Group, Friend, Guild, Stranger, StrangerFromGroup, Nearby],
-    Contact,
-]
 
 
 class Role(IntEnum):
@@ -70,16 +45,60 @@ class Role(IntEnum):
     OWNER = 3
 
 
-class Sender(BaseModel):
-    uid: str
-    uin: Optional[int] = None
-    nick: Optional[str] = None
-    role: Optional[Role] = None
+class PrivateSender(BaseModel):
+    uid: Optional[str] = None
+    uin: int
+    nick: str
 
-    def dump(self) -> ProtoSender:
-        return ProtoSender(
+    def dump(self) -> ProtoPrivateSender:
+        return ProtoPrivateSender(
             uid=self.uid,
             uin=self.uin,
             nick=self.nick,
-            role=ProtoRole(self.role.value) if self.role else None,
+        )
+
+
+class GroupSender(BaseModel):
+    group_id: str
+    uid: Optional[str] = None
+    uin: int
+    nick: str
+
+    def dump(self) -> ProtoGroupSender:
+        return ProtoGroupSender(
+            group_id=self.group_id,
+            uid=self.uid,
+            uin=self.uin,
+            nick=self.nick,
+        )
+
+
+class GuildSender(BaseModel):
+    guild_id: str
+    channel_id: str
+    tiny_id: str
+    nick: str
+    role: Role
+
+    @field_validator("role", mode="before")
+    def check_role(cls, v):
+        if v is None:
+            return Role.UNKNOWN
+        if isinstance(v, Role):
+            return v
+        if isinstance(v, int):
+            return Role(v)
+        if isinstance(v, ProtoRole):
+            return Role(v.value)
+        if isinstance(v, str) and v.upper() in Role.__members__:
+            return Role.__members__[v.upper()]
+        raise ValueError(f"invalid role: {v}")
+
+    def dump(self) -> ProtoGuildSender:
+        return ProtoGuildSender(
+            guild_id=self.guild_id,
+            channel_id=self.channel_id,
+            tiny_id=self.tiny_id,
+            nick=self.nick,
+            role=ProtoRole(self.role.value),
         )

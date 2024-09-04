@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 class SetFriendApplyResultRequest(betterproto.Message):
     request_id: str = betterproto.string_field(1)
     is_approve: bool = betterproto.bool_field(2)
-    remark: Optional[str] = betterproto.string_field(3, optional=True, group="_remark")
+    remark: Optional[str] = betterproto.string_field(3, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -32,7 +32,7 @@ class SetFriendApplyResultResponse(betterproto.Message):
 class SetGroupApplyResultRequest(betterproto.Message):
     request_id: str = betterproto.string_field(1)
     is_approve: bool = betterproto.bool_field(2)
-    deny_reason: Optional[str] = betterproto.string_field(3, optional=True, group="_deny_reason")
+    deny_reason: Optional[str] = betterproto.string_field(3, optional=True)
 
 
 @dataclass(eq=False, repr=False)

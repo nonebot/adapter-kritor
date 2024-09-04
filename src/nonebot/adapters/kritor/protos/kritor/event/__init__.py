@@ -65,15 +65,15 @@ class RequestEventRequestType(betterproto.Enum):
 
 
 class EventType(betterproto.Enum):
-    EVENT_TYPE_CORE_EVENT = 0
-    EVENT_TYPE_MESSAGE = 1
-    EVENT_TYPE_NOTICE = 2
-    EVENT_TYPE_REQUEST = 3
+    CORE_EVENT = 0
+    MESSAGE = 1
+    NOTICE = 2
+    REQUEST = 3
 
 
 @dataclass(eq=False, repr=False)
 class PrivatePokeNotice(betterproto.Message):
-    operator_uid: str = betterproto.string_field(1)
+    operator_uid: Optional[str] = betterproto.string_field(1, optional=True)
     operator_uin: int = betterproto.uint64_field(2)
     action: str = betterproto.string_field(3)
     suffix: str = betterproto.string_field(4)
@@ -82,7 +82,7 @@ class PrivatePokeNotice(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class PrivateRecallNotice(betterproto.Message):
-    operator_uid: str = betterproto.string_field(1)
+    operator_uid: Optional[str] = betterproto.string_field(1, optional=True)
     operator_uin: int = betterproto.uint64_field(2)
     message_id: str = betterproto.string_field(3)
     tip_text: str = betterproto.string_field(4)
@@ -90,7 +90,7 @@ class PrivateRecallNotice(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class PrivateFileUploadedNotice(betterproto.Message):
-    operator_uid: str = betterproto.string_field(1)
+    operator_uid: Optional[str] = betterproto.string_field(1, optional=True)
     operator_uin: int = betterproto.uint64_field(2)
     file_id: str = betterproto.string_field(3)
     file_sub_id: int = betterproto.int32_field(4)
@@ -103,9 +103,9 @@ class PrivateFileUploadedNotice(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GroupPokeNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    operator_uid: str = betterproto.string_field(2)
+    operator_uid: Optional[str] = betterproto.string_field(2, optional=True)
     operator_uin: int = betterproto.uint64_field(3)
-    target_uid: str = betterproto.string_field(4)
+    target_uid: Optional[str] = betterproto.string_field(4, optional=True)
     target_uin: int = betterproto.uint64_field(5)
     action: str = betterproto.string_field(6)
     suffix: str = betterproto.string_field(7)
@@ -115,9 +115,9 @@ class GroupPokeNotice(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GroupRecallNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    operator_uid: str = betterproto.string_field(2)
+    operator_uid: Optional[str] = betterproto.string_field(2, optional=True)
     operator_uin: int = betterproto.uint64_field(3)
-    target_uid: str = betterproto.string_field(4)
+    target_uid: Optional[str] = betterproto.string_field(4, optional=True)
     target_uin: int = betterproto.uint64_field(5)
     message_id: str = betterproto.string_field(6)
     tip_text: str = betterproto.string_field(7)
@@ -126,7 +126,7 @@ class GroupRecallNotice(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GroupFileUploadedNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    operator_uid: str = betterproto.string_field(2)
+    operator_uid: Optional[str] = betterproto.string_field(2, optional=True)
     operator_uin: int = betterproto.uint64_field(3)
     file_id: str = betterproto.string_field(4)
     file_name: str = betterproto.string_field(5)
@@ -139,9 +139,9 @@ class GroupFileUploadedNotice(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GroupCardChangedNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    operator_uid: str = betterproto.string_field(2)
+    operator_uid: Optional[str] = betterproto.string_field(2, optional=True)
     operator_uin: int = betterproto.uint64_field(3)
-    target_uid: str = betterproto.string_field(4)
+    target_uid: Optional[str] = betterproto.string_field(4, optional=True)
     target_uin: int = betterproto.uint64_field(5)
     new_card: str = betterproto.string_field(6)
 
@@ -149,7 +149,7 @@ class GroupCardChangedNotice(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GroupUniqueTitleChangedNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    target_uid: str = betterproto.string_field(2)
+    target_uid: Optional[str] = betterproto.string_field(2, optional=True)
     target_uin: int = betterproto.uint64_field(3)
     title: str = betterproto.string_field(4)
 
@@ -157,9 +157,9 @@ class GroupUniqueTitleChangedNotice(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GroupEssenceMessageNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    operator_uid: str = betterproto.string_field(2)
+    operator_uid: Optional[str] = betterproto.string_field(2, optional=True)
     operator_uin: int = betterproto.uint64_field(3)
-    target_uid: str = betterproto.string_field(4)
+    target_uid: Optional[str] = betterproto.string_field(4, optional=True)
     target_uin: int = betterproto.uint64_field(5)
     message_id: str = betterproto.string_field(6)
     is_set: bool = betterproto.bool_field(7)
@@ -168,9 +168,9 @@ class GroupEssenceMessageNotice(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GroupMemberIncreasedNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    operator_uid: str = betterproto.string_field(2)
+    operator_uid: Optional[str] = betterproto.string_field(2, optional=True)
     operator_uin: int = betterproto.uint64_field(3)
-    target_uid: str = betterproto.string_field(4)
+    target_uid: Optional[str] = betterproto.string_field(4, optional=True)
     target_uin: int = betterproto.uint64_field(5)
     type: "GroupMemberIncreasedNoticeGroupMemberIncreasedType" = betterproto.enum_field(6)
 
@@ -178,17 +178,17 @@ class GroupMemberIncreasedNotice(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GroupMemberDecreasedNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    operator_uid: Optional[str] = betterproto.string_field(2, optional=True, group="_operator_uid")
-    operator_uin: Optional[int] = betterproto.uint64_field(3, optional=True, group="_operator_uin")
-    target_uid: Optional[str] = betterproto.string_field(4, optional=True, group="_target_uid")
-    target_uin: Optional[int] = betterproto.uint64_field(5, optional=True, group="_target_uin")
+    operator_uid: Optional[str] = betterproto.string_field(2, optional=True)
+    operator_uin: Optional[int] = betterproto.uint64_field(3, optional=True)
+    target_uid: Optional[str] = betterproto.string_field(4, optional=True)
+    target_uin: Optional[int] = betterproto.uint64_field(5, optional=True)
     type: "GroupMemberDecreasedNoticeGroupMemberDecreasedType" = betterproto.enum_field(6)
 
 
 @dataclass(eq=False, repr=False)
 class GroupAdminChangedNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    target_uid: str = betterproto.string_field(4)
+    target_uid: Optional[str] = betterproto.string_field(4, optional=True)
     target_uin: int = betterproto.uint64_field(5)
     is_admin: bool = betterproto.bool_field(6)
 
@@ -196,7 +196,7 @@ class GroupAdminChangedNotice(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GroupSignInNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    target_uid: str = betterproto.string_field(2)
+    target_uid: Optional[str] = betterproto.string_field(2, optional=True)
     target_uin: int = betterproto.uint64_field(3)
     action: str = betterproto.string_field(4)
     rank_image: str = betterproto.string_field(6)
@@ -205,9 +205,9 @@ class GroupSignInNotice(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GroupMemberBanNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    operator_uid: str = betterproto.string_field(2)
+    operator_uid: Optional[str] = betterproto.string_field(2, optional=True)
     operator_uin: int = betterproto.uint64_field(3)
-    target_uid: str = betterproto.string_field(4)
+    target_uid: Optional[str] = betterproto.string_field(4, optional=True)
     target_uin: int = betterproto.uint64_field(5)
     duration: int = betterproto.int32_field(6)
     type: "GroupMemberBanNoticeGroupMemberBanType" = betterproto.enum_field(7)
@@ -216,7 +216,7 @@ class GroupMemberBanNotice(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GroupWholeBanNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    operator_uid: str = betterproto.string_field(2)
+    operator_uid: Optional[str] = betterproto.string_field(2, optional=True)
     operator_uin: int = betterproto.uint64_field(3)
     is_ban: bool = betterproto.bool_field(4)
 
@@ -232,24 +232,24 @@ class GroupReactMessageWithEmojiNotice(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GroupTransferNotice(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    operator_uid: str = betterproto.string_field(2)
+    operator_uid: Optional[str] = betterproto.string_field(2, optional=True)
     operator_uin: int = betterproto.uint64_field(3)
-    target_uid: str = betterproto.string_field(4)
+    target_uid: Optional[str] = betterproto.string_field(4, optional=True)
     target_uin: int = betterproto.uint64_field(5)
 
 
 @dataclass(eq=False, repr=False)
 class FriendIncreasedNotice(betterproto.Message):
-    friend_uid: str = betterproto.string_field(1)
+    friend_uid: Optional[str] = betterproto.string_field(1, optional=True)
     friend_uin: int = betterproto.uint64_field(2)
-    friend_nick: Optional[str] = betterproto.string_field(3, optional=True, group="_friend_nick")
+    friend_nick: Optional[str] = betterproto.string_field(3, optional=True)
 
 
 @dataclass(eq=False, repr=False)
 class FriendDecreasedNotice(betterproto.Message):
-    friend_uid: str = betterproto.string_field(1)
+    friend_uid: Optional[str] = betterproto.string_field(1, optional=True)
     friend_uin: int = betterproto.uint64_field(2)
-    friend_nick: Optional[str] = betterproto.string_field(3, optional=True, group="_friend_nick")
+    friend_nick: Optional[str] = betterproto.string_field(3, optional=True)
 
 
 @dataclass(eq=False, repr=False)
@@ -280,7 +280,7 @@ class NoticeEvent(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class FriendApplyRequest(betterproto.Message):
-    applier_uid: str = betterproto.string_field(1)
+    applier_uid: Optional[str] = betterproto.string_field(1, optional=True)
     applier_uin: int = betterproto.uint64_field(2)
     message: str = betterproto.string_field(3)
 
@@ -288,17 +288,17 @@ class FriendApplyRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GroupApplyRequest(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    applier_uid: str = betterproto.string_field(2)
+    applier_uid: Optional[str] = betterproto.string_field(2, optional=True)
     applier_uin: int = betterproto.uint64_field(3)
-    inviter_uid: str = betterproto.string_field(4)
-    inviter_uin: int = betterproto.uint64_field(5)
+    inviter_uid: Optional[str] = betterproto.string_field(4, optional=True)
+    inviter_uin: Optional[int] = betterproto.uint64_field(5, optional=True)
     reason: str = betterproto.string_field(6)
 
 
 @dataclass(eq=False, repr=False)
 class InvitedJoinGroupRequest(betterproto.Message):
     group_id: int = betterproto.uint64_field(1)
-    inviter_uid: str = betterproto.string_field(2)
+    inviter_uid: Optional[str] = betterproto.string_field(2, optional=True)
     inviter_uin: int = betterproto.uint64_field(3)
 
 
@@ -333,7 +333,7 @@ class EventServiceStub(betterproto.ServiceStub):
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
         metadata: Optional["MetadataLike"] = None,
-    ) -> AsyncIterator["EventStructure"]:
+    ) -> AsyncIterator[EventStructure]:
         async for response in self._unary_stream(
             "/kritor.event.EventService/RegisterActiveListener",
             request_push_event,
@@ -346,7 +346,7 @@ class EventServiceStub(betterproto.ServiceStub):
 
     async def register_passive_listener(
         self,
-        event_structure_iterator: Union[AsyncIterable["EventStructure"], Iterable["EventStructure"]],
+        event_structure_iterator: Union[AsyncIterable[EventStructure], Iterable[EventStructure]],
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
@@ -365,12 +365,12 @@ class EventServiceStub(betterproto.ServiceStub):
 
 class EventServiceBase(ServiceBase):
 
-    async def register_active_listener(self, request_push_event: "RequestPushEvent") -> AsyncIterator["EventStructure"]:
+    async def register_active_listener(self, request_push_event: "RequestPushEvent") -> AsyncIterator[EventStructure]:
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
         yield EventStructure()
 
     async def register_passive_listener(
-        self, event_structure_iterator: AsyncIterator["EventStructure"]
+        self, event_structure_iterator: AsyncIterator[EventStructure]
     ) -> "RequestPushEvent":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 

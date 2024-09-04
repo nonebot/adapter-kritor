@@ -21,12 +21,12 @@ if TYPE_CHECKING:
 class ReverseServiceStub(betterproto.ServiceStub):
     async def reverse_stream(
         self,
-        common_response_iterator: Union[AsyncIterable["_common__.Response"], Iterable["_common__.Response"]],
+        common_response_iterator: Union[AsyncIterable[_common__.Response], Iterable[_common__.Response]],
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
         metadata: Optional["MetadataLike"] = None,
-    ) -> AsyncIterator["_common__.Request"]:
+    ) -> AsyncIterator[_common__.Request]:
         async for response in self._stream_stream(
             "/kritor.reverse.ReverseService/ReverseStream",
             common_response_iterator,
@@ -42,8 +42,8 @@ class ReverseServiceStub(betterproto.ServiceStub):
 class ReverseServiceBase(ServiceBase):
 
     async def reverse_stream(
-        self, common_response_iterator: AsyncIterator["_common__.Response"]
-    ) -> AsyncIterator["_common__.Request"]:
+        self, common_response_iterator: AsyncIterator[_common__.Response]
+    ) -> AsyncIterator[_common__.Request]:
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
         yield _common__.Request()
 

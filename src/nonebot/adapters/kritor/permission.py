@@ -1,6 +1,6 @@
 from nonebot.permission import Permission
 
-from .model import Role
+from .bot import Bot
 from .event import TempMessage, GroupMessage, MessageEvent, FriendMessage, StrangerMessage
 
 
@@ -34,22 +34,25 @@ async def _group(event: GroupMessage) -> bool:
     return True
 
 
-async def _group_member(event: GroupMessage) -> bool:
-    if not event.sender.role:
-        return True
-    return event.sender.role is Role.UNKNOWN
+async def _group_member(event: GroupMessage, bot: Bot) -> bool:
+    info = await bot.get_group_info(
+        group=event.sender.group_id,
+    )
+    return event.sender.uin not in info.admins and event.sender.uin != info.owner
 
 
-async def _group_admin(event: GroupMessage) -> bool:
-    if not event.sender.role:
-        return True
-    return event.sender.role is Role.ADMIN
+async def _group_admin(event: GroupMessage, bot: Bot) -> bool:
+    info = await bot.get_group_info(
+        group=event.sender.group_id,
+    )
+    return event.sender.uin in info.admins
 
 
-async def _group_owner(event: GroupMessage) -> bool:
-    if not event.sender.role:
-        return True
-    return event.sender.role is Role.OWNER
+async def _group_owner(event: GroupMessage, bot: Bot) -> bool:
+    info = await bot.get_group_info(
+        group=event.sender.group_id,
+    )
+    return event.sender.uin == info.owner
 
 
 GROUP: Permission = Permission(_group)

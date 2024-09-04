@@ -64,22 +64,22 @@ class Adapter(BaseAdapter):
         )
 
     async def _listen_message(self, bot: Bot, service: EventServiceStub):
-        async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_MESSAGE)):
+        async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_MESSAGE)):  # type: ignore
             log("DEBUG", f"Received message event: {event.message}")
             message = event.message
-            event = type_validate_python(MessageEventType, message.to_pydict(casing=Casing.SNAKE))  # type: ignore
+            event = type_validate_python(MessageEventType, message.to_dict(casing=Casing.SNAKE))  # type: ignore
             task = asyncio.create_task(bot.handle_event(event))
             self._ref_tasks.add(task)
             task.add_done_callback(self._ref_tasks.discard)
 
     async def _listen_notice(self, bot: Bot, service: EventServiceStub):
-        async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_NOTICE)):
+        async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_NOTICE)):  # type: ignore
             notice = which_one_of(event.notice, "notice")
             log("DEBUG", f"Received notice event {notice[0]}: {notice[1]}")
             data = {
                 "__type__": notice[0],
                 "time": event.notice.time,
-                **notice[1].to_pydict(casing=Casing.SNAKE),  # type: ignore
+                **notice[1].to_dict(casing=Casing.SNAKE),  # type: ignore
             }
             event = type_validate_python(RequestEventType, data)
             task = asyncio.create_task(bot.handle_event(event))
@@ -87,13 +87,13 @@ class Adapter(BaseAdapter):
             task.add_done_callback(self._ref_tasks.discard)
 
     async def _listen_request(self, bot: Bot, service: EventServiceStub):
-        async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_REQUEST)):
+        async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_REQUEST)):  # type: ignore
             request = which_one_of(event.request, "request")
             log("DEBUG", f"Received request event {request[0]}: {request[1]}")
             data = {
                 "__type__": request[0],
                 "time": event.request.time,
-                **request[1].to_pydict(casing=Casing.SNAKE),  # type: ignore
+                **request[1].to_dict(casing=Casing.SNAKE),  # type: ignore
             }
             event = type_validate_python(NoticeEventType, data)
             event.check_tome(bot)
@@ -102,7 +102,7 @@ class Adapter(BaseAdapter):
             task.add_done_callback(self._ref_tasks.discard)
 
     async def _listen_core(self, bot: Bot, service: EventServiceStub):
-        async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_CORE_EVENT)):
+        async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_CORE_EVENT)):  # type: ignore
             log("DEBUG", f"Received event: {event}")
 
     async def grpc(self, info: ClientInfo) -> None:
