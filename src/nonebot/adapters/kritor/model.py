@@ -5,8 +5,8 @@ from dataclasses import dataclass
 from pydantic import BaseModel
 
 from .compat import field_validator
-from .protos.kritor.common import Scene as ProtoScene
 from .protos.kritor.common import Role as ProtoRole
+from .protos.kritor.common import Scene as ProtoScene
 from .protos.kritor.common import Contact as ProtoContact
 from .protos.kritor.common import GroupSender as ProtoGroupSender
 from .protos.kritor.common import GuildSender as ProtoGuildSender
