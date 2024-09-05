@@ -105,7 +105,7 @@ class MessageEvent(Event):
     @field_validator("scene", mode="before")
     def check_scene(cls, v):
         if v is None:
-            return SceneType.FRIEND
+            return SceneType.GROUP
         if isinstance(v, SceneType):
             return v
         if isinstance(v, int):
@@ -126,6 +126,8 @@ class MessageEvent(Event):
             values["sender"] = values.pop("group")
         elif "guild" in values:
             values["sender"] = values.pop("guild")
+        if "scene" not in values:
+            values["scene"] = SceneType.GROUP
         return values
 
     @override
@@ -557,7 +559,21 @@ class GroupMemberIncreasedNotice(NoticeEvent):
     target_uid: Optional[str] = None
     target_uin: int
 
-    flag: GroupMemberIncreasedNoticeGroupMemberIncreasedType = Field(..., alias="type")
+    flag: GroupMemberIncreasedNoticeGroupMemberIncreasedType = Field(
+        GroupMemberIncreasedNoticeGroupMemberIncreasedType.APPROVE, alias="type"
+    )
+
+    @field_validator("flag", mode="before")
+    def check_flag(cls, v):
+        if v is None:
+            return GroupMemberIncreasedNoticeGroupMemberIncreasedType.APPROVE
+        if isinstance(v, GroupMemberIncreasedNoticeGroupMemberIncreasedType):
+            return v
+        if isinstance(v, int):
+            return GroupMemberIncreasedNoticeGroupMemberIncreasedType(v)
+        if isinstance(v, str) and v.upper() in GroupMemberIncreasedNoticeGroupMemberIncreasedType.__members__:
+            return GroupMemberIncreasedNoticeGroupMemberIncreasedType.__members__[v.upper()]
+        raise ValueError(f"invalid flag: {v}")
 
     @override
     def get_event_description(self) -> str:
@@ -582,7 +598,21 @@ class GroupMemberDecreasedNotice(NoticeEvent):
     target_uid: Optional[str] = None
     target_uin: int
 
-    flag: GroupMemberDecreasedNoticeGroupMemberDecreasedType = Field(..., alias="type")
+    flag: GroupMemberDecreasedNoticeGroupMemberDecreasedType = Field(
+        GroupMemberDecreasedNoticeGroupMemberDecreasedType.LEAVE, alias="type"
+    )
+
+    @field_validator("flag", mode="before")
+    def check_flag(cls, v):
+        if v is None:
+            return GroupMemberDecreasedNoticeGroupMemberDecreasedType.LEAVE
+        if isinstance(v, GroupMemberDecreasedNoticeGroupMemberDecreasedType):
+            return v
+        if isinstance(v, int):
+            return GroupMemberDecreasedNoticeGroupMemberDecreasedType(v)
+        if isinstance(v, str) and v.upper() in GroupMemberDecreasedNoticeGroupMemberDecreasedType.__members__:
+            return GroupMemberDecreasedNoticeGroupMemberDecreasedType.__members__[v.upper()]
+        raise ValueError(f"invalid flag: {v}")
 
     @override
     def get_event_description(self) -> str:
@@ -634,7 +664,19 @@ class GroupMemberBanNotice(NoticeEvent):
     target_uin: int
     duration: int
 
-    flag: GroupMemberBanNoticeGroupMemberBanType = Field(..., alias="type")
+    flag: GroupMemberBanNoticeGroupMemberBanType = Field(GroupMemberBanNoticeGroupMemberBanType.LIFT_BAN, alias="type")
+
+    @field_validator("flag", mode="before")
+    def check_flag(cls, v):
+        if v is None:
+            return GroupMemberBanNoticeGroupMemberBanType.LIFT_BAN
+        if isinstance(v, GroupMemberBanNoticeGroupMemberBanType):
+            return v
+        if isinstance(v, int):
+            return GroupMemberBanNoticeGroupMemberBanType(v)
+        if isinstance(v, str) and v.upper() in GroupMemberBanNoticeGroupMemberBanType.__members__:
+            return GroupMemberBanNoticeGroupMemberBanType.__members__[v.upper()]
+        raise ValueError(f"invalid flag: {v}")
 
     @override
     def get_event_description(self) -> str:

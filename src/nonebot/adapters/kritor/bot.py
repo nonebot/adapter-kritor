@@ -334,7 +334,7 @@ class Bot(BaseBot):
             if isinstance(account, int)
             else {"account_uid": account, "super_ticket": super_ticket}
         )
-        await self.service.core.switch_account(SwitchAccountRequest().from_pydict(args))
+        await self.service.core.switch_account(SwitchAccountRequest().from_dict(args))
 
     @API
     async def get_device_battery(self):
@@ -805,7 +805,7 @@ class Bot(BaseBot):
             args = {"file": raw if isinstance(raw, bytes) else raw.getvalue(), "group": _group_id}
         else:
             raise ValueError("No file provided")
-        return await self.service.file.upload_file(UploadFileRequest().from_pydict(args))
+        return await self.service.file.upload_file(UploadFileRequest().from_dict(args))
 
     @API
     async def delete_file(
@@ -1225,7 +1225,7 @@ class Bot(BaseBot):
             args = {"file": raw if isinstance(raw, bytes) else raw.getvalue(), "group": _group_id}
         else:
             raise ValueError("No file provided")
-        return await self.service.developer.upload_image(UploadImageRequest().from_pydict(args))
+        return await self.service.developer.upload_image(UploadImageRequest().from_dict(args))
 
     @API
     async def get_uid_by_uin(
@@ -1316,7 +1316,7 @@ class Bot(BaseBot):
             args = {"target_uid": target.uid} if target.uid else {"target_uin": target.uin}
         else:
             args = {"target_uin": target} if isinstance(target, int) else {"target_uid": target}
-        return await self.service.friend.is_black_list_user(IsBlackListUserRequest().from_pydict(args))
+        return await self.service.friend.is_black_list_user(IsBlackListUserRequest().from_dict(args))
 
     @API
     async def set_profile_card(
@@ -1378,7 +1378,7 @@ class Bot(BaseBot):
                 if isinstance(target, int)
                 else {"target_uid": target, "vote_count": vote_count}
             )
-        return await self.service.friend.vote_user(VoteUserRequest().from_pydict(args))
+        return await self.service.friend.vote_user(VoteUserRequest().from_dict(args))
 
     @API
     async def get_group_info(
@@ -1444,7 +1444,7 @@ class Bot(BaseBot):
         args["group"] = _group_id
         args["refresh"] = refresh
         return (
-            await self.service.group.get_group_member_info(GetGroupMemberInfoRequest().from_pydict(args))
+            await self.service.group.get_group_member_info(GetGroupMemberInfoRequest().from_dict(args))
         ).group_member_info
 
     @API

@@ -40,10 +40,10 @@ class MessageSegment(BaseMessageSegment["Message"]):
     @classmethod
     def parse(cls, element: Element):
         name, data = which_one_of(element, "data")
-        return cls(name, data.to_pydict(casing=Casing.SNAKE) if data else {})  # type: ignore
+        return cls(name, data.to_pydict(Casing.SNAKE, True) if data else {})  # type: ignore
 
     def dump(self) -> "Element":
-        return Element().from_pydict({"type": self.__element_type__, self.type: self.data})
+        return Element().from_dict({"type": self.__element_type__, self.type: self.data})
 
     @override
     def __str__(self) -> str:
@@ -523,9 +523,11 @@ class Message(BaseMessage[MessageSegment]):
         yield MessageSegment.text(msg)
 
     @classmethod
-    def from_elements(cls, elements: list[Element]) -> "Message":
+    def from_elements(cls, elements: list[Union[dict, Element]]) -> "Message":
         msg = Message()
         for element in elements:
+            if isinstance(element, dict):
+                element = Element().from_dict(element)
             msg.append(TYPE_MAPPING[element.type].parse(element))
         return msg
 
