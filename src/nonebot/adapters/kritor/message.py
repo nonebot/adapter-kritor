@@ -40,7 +40,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
     @classmethod
     def parse(cls, element: Element):
         name, data = which_one_of(element, "data")
-        return cls(name, data.to_pydict(Casing.SNAKE, True) if data else {})  # type: ignore
+        return cls(name, data.to_pydict(Casing.SNAKE) if data else {})  # type: ignore
 
     def dump(self) -> "Element":
         return Element().from_dict({"type": self.__element_type__, self.type: self.data})

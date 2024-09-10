@@ -14,14 +14,15 @@ from .protos.kritor.common import PrivateSender as ProtoPrivateSender
 
 
 class SceneType(IntEnum):
-    GROUP = 0
-    FRIEND = 1
-    GUILD = 2
-    STRANGER_FROM_GROUP = 10
-    NEARBY = 5
+    UNSPECIFIED = 0
+    GROUP = 1
+    FRIEND = 2
+    GUILD = 3
+    STRANGER_FROM_GROUP = 11
+    NEARBY = 6
     """以下类型为可选实现"""
 
-    STRANGER = 9
+    STRANGER = 10
 
 
 @dataclass

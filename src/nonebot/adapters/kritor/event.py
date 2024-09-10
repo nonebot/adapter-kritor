@@ -127,7 +127,7 @@ class MessageEvent(Event):
         elif "guild" in values:
             values["sender"] = values.pop("guild")
         if "scene" not in values:
-            values["scene"] = SceneType.GROUP
+            values["scene"] = SceneType.UNSPECIFIED
         return values
 
     @override
@@ -560,7 +560,7 @@ class GroupMemberIncreasedNotice(NoticeEvent):
     target_uin: int
 
     flag: GroupMemberIncreasedNoticeGroupMemberIncreasedType = Field(
-        GroupMemberIncreasedNoticeGroupMemberIncreasedType.APPROVE, alias="type"
+        GroupMemberIncreasedNoticeGroupMemberIncreasedType.UNSPECIFIED, alias="type"
     )
 
     @field_validator("flag", mode="before")
@@ -599,7 +599,7 @@ class GroupMemberDecreasedNotice(NoticeEvent):
     target_uin: int
 
     flag: GroupMemberDecreasedNoticeGroupMemberDecreasedType = Field(
-        GroupMemberDecreasedNoticeGroupMemberDecreasedType.LEAVE, alias="type"
+        GroupMemberDecreasedNoticeGroupMemberDecreasedType.UNSPECIFIED, alias="type"
     )
 
     @field_validator("flag", mode="before")
@@ -664,7 +664,7 @@ class GroupMemberBanNotice(NoticeEvent):
     target_uin: int
     duration: int
 
-    flag: GroupMemberBanNoticeGroupMemberBanType = Field(GroupMemberBanNoticeGroupMemberBanType.LIFT_BAN, alias="type")
+    flag: GroupMemberBanNoticeGroupMemberBanType = Field(GroupMemberBanNoticeGroupMemberBanType.UNSPECIFIED, alias="type")
 
     @field_validator("flag", mode="before")
     def check_flag(cls, v):

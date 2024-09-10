@@ -17,10 +17,11 @@ if TYPE_CHECKING:
 
 
 class MemberRole(betterproto.Enum):
-    ADMIN = 0
-    MEMBER = 1
-    OWNER = 2
-    STRANGER = 3
+    UNSPECIFIED = 0
+    ADMIN = 1
+    MEMBER = 2
+    OWNER = 3
+    STRANGER = 4
 
 
 @dataclass(eq=False, repr=False)

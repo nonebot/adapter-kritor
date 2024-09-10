@@ -17,15 +17,17 @@ if TYPE_CHECKING:
 
 
 class TicketOperationResponseCode(betterproto.Enum):
-    OK = 0
-    ERROR = 1
+    UNSPECIFIED = 0
+    OK = 1
+    ERROR = 2
 
 
 class AuthenticateResponseAuthenticateResponseCode(betterproto.Enum):
-    OK = 0
-    NO_ACCOUNT = 1
-    NO_TICKET = 2
-    LOGIC_ERROR = 3
+    UNSPECIFIED = 0
+    OK = 1
+    NO_ACCOUNT = 2
+    NO_TICKET = 3
+    LOGIC_ERROR = 4
 
 
 @dataclass(eq=False, repr=False)

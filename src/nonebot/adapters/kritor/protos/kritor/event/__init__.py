@@ -19,19 +19,22 @@ if TYPE_CHECKING:
 
 
 class GroupMemberIncreasedNoticeGroupMemberIncreasedType(betterproto.Enum):
-    APPROVE = 0
-    INVITE = 1
+    UNSPECIFIED = 0
+    APPROVE = 1
+    INVITE = 2
 
 
 class GroupMemberDecreasedNoticeGroupMemberDecreasedType(betterproto.Enum):
-    LEAVE = 0
-    KICK = 1
-    KICK_ME = 2
+    UNSPECIFIED = 0
+    LEAVE = 1
+    KICK = 2
+    KICK_ME = 3
 
 
 class GroupMemberBanNoticeGroupMemberBanType(betterproto.Enum):
-    LIFT_BAN = 0
-    BAN = 1
+    UNSPECIFIED = 0
+    LIFT_BAN = 1
+    BAN = 2
 
 
 class NoticeEventNoticeType(betterproto.Enum):
@@ -65,10 +68,11 @@ class RequestEventRequestType(betterproto.Enum):
 
 
 class EventType(betterproto.Enum):
-    CORE_EVENT = 0
-    MESSAGE = 1
-    NOTICE = 2
-    REQUEST = 3
+    UNSPECIFIED = 0
+    CORE_EVENT = 1
+    MESSAGE = 2
+    NOTICE = 3
+    REQUEST = 4
 
 
 @dataclass(eq=False, repr=False)

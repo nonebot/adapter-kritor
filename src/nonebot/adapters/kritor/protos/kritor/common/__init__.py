@@ -10,14 +10,15 @@ import betterproto
 
 
 class Scene(betterproto.Enum):
-    GROUP = 0
-    FRIEND = 1
-    GUILD = 2
-    STRANGER_FROM_GROUP = 10
-    NEARBY = 5
+    UNSPECIFIED = 0
+    GROUP = 1
+    FRIEND = 2
+    GUILD = 3
+    STRANGER_FROM_GROUP = 11
+    NEARBY = 6
     """以下类型为可选实现"""
 
-    STRANGER = 9
+    STRANGER = 10
 
 
 class Role(betterproto.Enum):
@@ -28,51 +29,55 @@ class Role(betterproto.Enum):
 
 
 class ElementElementType(betterproto.Enum):
-    TEXT = 0
-    AT = 1
-    FACE = 2
-    BUBBLE_FACE = 3
-    REPLY = 4
-    IMAGE = 5
-    VOICE = 6
-    VIDEO = 7
-    BASKETBALL = 8
-    DICE = 9
-    RPS = 10
-    POKE = 11
-    MUSIC = 12
-    WEATHER = 13
-    LOCATION = 14
-    SHARE = 15
-    GIFT = 16
-    MARKET_FACE = 17
-    FORWARD = 18
-    CONTACT = 19
-    JSON = 20
-    XML = 21
-    FILE = 22
-    MARKDOWN = 23
-    KEYBOARD = 24
+    UNSPECIFIED = 0
+    TEXT = 1
+    AT = 2
+    FACE = 3
+    BUBBLE_FACE = 4
+    REPLY = 5
+    IMAGE = 6
+    VOICE = 7
+    VIDEO = 8
+    BASKETBALL = 9
+    DICE = 10
+    RPS = 11
+    POKE = 12
+    MUSIC = 13
+    WEATHER = 14
+    LOCATION = 15
+    SHARE = 16
+    GIFT = 17
+    MARKET_FACE = 18
+    FORWARD = 19
+    CONTACT = 20
+    JSON = 21
+    XML = 22
+    FILE = 23
+    MARKDOWN = 24
+    KEYBOARD = 25
 
 
 class ImageElementImageType(betterproto.Enum):
-    COMMON = 0
-    ORIGIN = 1
-    FLASH = 2
+    UNSPECIFIED = 0
+    COMMON = 1
+    ORIGIN = 2
+    FLASH = 3
 
 
 class MusicElementMusicPlatform(betterproto.Enum):
-    QQ = 0
-    NETEASE = 1
-    CUSTOM = 10
+    UNSPECIFIED = 0
+    QQ = 1
+    NETEASE = 2
+    CUSTOM = 11
 
 
 class ResponseResponseCode(betterproto.Enum):
-    SUCCESS = 0
-    INVALID_ARGUMENT = 1
-    INTERNAL = 2
-    UNAUTHENTICATED = 3
-    PERMISSION_DENIED = 4
+    UNSPECIFIED = 0
+    SUCCESS = 1
+    INVALID_ARGUMENT = 2
+    INTERNAL = 3
+    UNAUTHENTICATED = 4
+    PERMISSION_DENIED = 5
 
 
 @dataclass(eq=False, repr=False)

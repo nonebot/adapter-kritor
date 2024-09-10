@@ -57,7 +57,7 @@ dev = [
     "black>=24.3.0",
     "isort>=5.13.2",
     "ruff>=0.3.4",
-    "grpcio-tools>=1.62.1",
+    "grpcio-tools>=1.66.1",
     "betterproto[compiler]>=2.0.0b7",
 ]
 

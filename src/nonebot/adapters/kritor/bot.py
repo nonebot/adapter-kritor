@@ -148,7 +148,7 @@ async def _check_reply(
         origin = (await bot.get_message(message_id=msg_seg.data["message_id"])).message
     except Exception:
         return
-    replied_message: MessageEvent = type_validate_python(MessageEventType, origin.to_pydict(casing=Casing.SNAKE))  # type: ignore
+    replied_message: MessageEvent = type_validate_python(MessageEventType, origin.to_dict(casing=Casing.SNAKE))  # type: ignore
     event._replied_message = replied_message
     event.to_me = replied_message.get_user_id() == bot.info.account
     if (
