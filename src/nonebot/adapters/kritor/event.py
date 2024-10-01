@@ -157,6 +157,8 @@ class FriendMessage(MessageEvent):
     scene: Literal[SceneType.FRIEND]
     sender: PrivateSender
 
+    to_me: bool = True
+
     @override
     def get_event_name(self) -> str:
         return "message.friend"
@@ -215,6 +217,8 @@ class StrangerMessage(MessageEvent):
     scene: Literal[SceneType.STRANGER]
     sender: PrivateSender
 
+    to_me: bool = True
+
     @override
     def get_event_name(self) -> str:
         return "message.stranger"
@@ -230,6 +234,8 @@ class StrangerMessage(MessageEvent):
 class TempMessage(MessageEvent):
     scene: Literal[SceneType.STRANGER_FROM_GROUP]
     sender: GroupSender
+
+    to_me: bool = True
 
     @override
     def get_event_name(self) -> str:
@@ -260,6 +266,8 @@ class TempMessage(MessageEvent):
 class NearbyMessage(MessageEvent):
     scene: Literal[SceneType.NEARBY]
     sender: PrivateSender
+
+    to_me: bool = True
 
     @override
     def get_event_name(self) -> str:

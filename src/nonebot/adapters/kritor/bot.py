@@ -150,7 +150,8 @@ async def _check_reply(
         return
     replied_message: MessageEvent = type_validate_python(MessageEventType, origin.to_dict(casing=Casing.SNAKE))  # type: ignore
     event._replied_message = replied_message
-    event.to_me = replied_message.get_user_id() == bot.info.account
+    if not event.to_me:
+        event.to_me = replied_message.get_user_id() == bot.info.account
     if (
         len(message) > index
         and message[index].type == "at"
@@ -171,7 +172,7 @@ def _check_at_me(
 ):
     def _is_at_me_seg(segment: MessageSegment) -> bool:
         return segment.type == "at" and (
-            segment.get("uid") == bot.info.account or segment.data["uid"] == bot.info.account
+            str(segment.get("uid")) == bot.info.account or str(segment.data["uin"]) == bot.info.account
         )
 
     message = event.get_message()

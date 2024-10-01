@@ -64,7 +64,7 @@ class Adapter(BaseAdapter):
         )
 
     async def _listen_message(self, bot: Bot, service: EventServiceStub):
-        async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_MESSAGE)):  # type: ignore
+        async for event in service.register_active_listener(RequestPushEvent(EventType.MESSAGE), timeout=60000):  # type: ignore
             log("DEBUG", f"Received message event: {event.message}")
             message = event.message
             event = type_validate_python(MessageEventType, message.to_dict(casing=Casing.SNAKE))  # type: ignore
@@ -73,7 +73,7 @@ class Adapter(BaseAdapter):
             task.add_done_callback(self._ref_tasks.discard)
 
     async def _listen_notice(self, bot: Bot, service: EventServiceStub):
-        async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_NOTICE)):  # type: ignore
+        async for event in service.register_active_listener(RequestPushEvent(EventType.NOTICE), timeout=60000):  # type: ignore
             notice = which_one_of(event.notice, "notice")
             log("DEBUG", f"Received notice event {notice[0]}: {notice[1]}")
             data = {
@@ -87,7 +87,7 @@ class Adapter(BaseAdapter):
             task.add_done_callback(self._ref_tasks.discard)
 
     async def _listen_request(self, bot: Bot, service: EventServiceStub):
-        async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_REQUEST)):  # type: ignore
+        async for event in service.register_active_listener(RequestPushEvent(EventType.REQUEST), timeout=60000):  # type: ignore
             request = which_one_of(event.request, "request")
             log("DEBUG", f"Received request event {request[0]}: {request[1]}")
             data = {
@@ -136,7 +136,7 @@ class Adapter(BaseAdapter):
                     asyncio.create_task(self._listen_request(bot, event)),
                     asyncio.create_task(self._listen_core(bot, event)),
                 ]
-                await asyncio.wait(listens, return_when=asyncio.FIRST_COMPLETED)
+                await asyncio.gather(*listens)
         except Exception as e:
             log("ERROR", f"Bot {info.account} connection failed: {e}")
             raise
