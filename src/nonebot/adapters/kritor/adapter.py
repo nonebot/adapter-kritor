@@ -102,7 +102,7 @@ class Adapter(BaseAdapter):
             task.add_done_callback(self._ref_tasks.discard)
 
     async def _listen_core(self, bot: Bot, service: EventServiceStub):
-        async for event in service.register_active_listener(RequestPushEvent(EventType.EVENT_TYPE_CORE_EVENT)):  # type: ignore
+        async for event in service.register_active_listener(RequestPushEvent(EventType.CORE_EVENT)):  # type: ignore
             log("DEBUG", f"Received event: {event}")
 
     async def grpc(self, info: ClientInfo) -> None:

@@ -672,7 +672,9 @@ class GroupMemberBanNotice(NoticeEvent):
     target_uin: int
     duration: int
 
-    flag: GroupMemberBanNoticeGroupMemberBanType = Field(GroupMemberBanNoticeGroupMemberBanType.UNSPECIFIED, alias="type")
+    flag: GroupMemberBanNoticeGroupMemberBanType = Field(
+        GroupMemberBanNoticeGroupMemberBanType.UNSPECIFIED, alias="type"
+    )
 
     @field_validator("flag", mode="before")
     def check_flag(cls, v):
