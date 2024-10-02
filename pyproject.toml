@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-adapter-kritor"
-version = "0.3.0"
+version = "0.3.1"
 description = "Nonebot Adapter for Kritor Protocol"
 authors = [
     {name = "rf_tar_railt", email = "rf_tar_railt@qq.com"},
