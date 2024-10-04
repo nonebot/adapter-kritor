@@ -14,7 +14,7 @@ from nonebot.adapters import Bot as BaseBot
 from .utils import API, log
 from .config import ClientInfo
 from .message import Reply, Message, MessageSegment
-from .event import Event, MessageEvent, MessageEventType
+from .event import Event, MessageEvent, MessageEventType, NoticeEvent, GroupReactMessageWithEmojiNotice
 from .protos.kritor.common import Element, ForwardMessageBody
 from .model import Contact, SceneType, GroupSender, GuildSender, PrivateSender
 from .protos.kritor.core import (
@@ -268,6 +268,17 @@ class Bot(BaseBot):
             await _check_reply(self, event)
             _check_at_me(self, event)
             _check_nickname(self, event)
+        if isinstance(event, NoticeEvent):
+            if isinstance(event, GroupReactMessageWithEmojiNotice):
+                try:
+                    origin = (await self.get_message(message_id=event.message_id)).message
+                    origin_message: MessageEvent = type_validate_python(MessageEventType, origin.to_dict(casing=Casing.SNAKE))  # type: ignore
+                    event._origin_message = origin_message
+                    if not event.to_me:
+                        event.to_me = origin_message.get_user_id() == self.info.account
+                except Exception:
+                    event._origin_message = None
+            event.check_tome(self)
         await handle_event(self, event)
 
     @API

@@ -165,7 +165,7 @@ class FriendMessage(MessageEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = f"Message from {self.sender.nick or self.sender.uin or self.sender.uid}: " f"{self.get_message()}"
+        text = f"{self.sender.nick or self.sender.uin or self.sender.uid}: " f"{self.get_message()}"
         return escape_tag(text)
 
 
@@ -180,8 +180,7 @@ class GroupMessage(MessageEvent):
     @override
     def get_event_description(self) -> str:
         text = (
-            f"Message from {self.sender.nick or self.sender.uin or self.sender.uid} "
-            f"in group {self.sender.group_id}: "
+            f"[{self.sender.group_id}]{self.sender.nick or self.sender.uin or self.sender.uid}: "
             f"{self.get_message()}"
         )
         return escape_tag(text)
@@ -206,8 +205,8 @@ class GuildMessage(MessageEvent):
     @override
     def get_event_description(self) -> str:
         text = (
-            f"Message from {self.sender.nick or self.sender.tiny_id} "
-            f"in guild {self.sender.guild_id}/{self.sender.channel_id or ''}: "
+            f"[{self.sender.guild_id}/{self.sender.channel_id or ''}] "
+            f"{self.sender.nick or self.sender.tiny_id}: "
             f"{self.get_message()}"
         )
         return escape_tag(text)
@@ -226,7 +225,7 @@ class StrangerMessage(MessageEvent):
     @override
     def get_event_description(self) -> str:
         text = (
-            f"Message from stranger {self.sender.nick or self.sender.uin or self.sender.uid}: " f"{self.get_message()}"
+            f"{self.sender.nick or self.sender.uin or self.sender.uid}: {self.get_message()}"
         )
         return escape_tag(text)
 
@@ -244,7 +243,7 @@ class TempMessage(MessageEvent):
     @override
     def get_event_description(self) -> str:
         text = (
-            f"Message from stranger in group {self.sender.group_id}, "
+            f"[{self.sender.group_id}] "
             f"{self.sender.nick or self.sender.uin or self.sender.uid}: "
             f"{self.get_message()}"
         )
@@ -275,7 +274,7 @@ class NearbyMessage(MessageEvent):
 
     @override
     def get_event_description(self) -> str:
-        text = f"Message from nearby {self.sender.nick or self.sender.uin or self.sender.uid}: " f"{self.get_message()}"
+        text = f"{self.sender.nick or self.sender.uin or self.sender.uid}: {self.get_message()}"
         return escape_tag(text)
 
 
@@ -393,7 +392,10 @@ class NoticeEvent(Event):
 
     def check_tome(self, bot: "Bot") -> None:
         if not self.is_tome():
-            self.to_me = self.get_user_id() == bot.self_id
+            try:
+                self.to_me = self.get_user_id() == bot.self_id
+            except ValueError:
+                self.to_me = False
 
 
 class PrivatePokeNotice(NoticeEvent):
@@ -804,6 +806,9 @@ class GroupReactMessageWithEmojiNotice(NoticeEvent):
     face_id: int
     is_set: bool
 
+    if TYPE_CHECKING:
+        _origin_message: Optional[MessageEvent]
+
     @override
     def get_event_description(self) -> str:
         text = (
@@ -815,15 +820,13 @@ class GroupReactMessageWithEmojiNotice(NoticeEvent):
 
     @override
     def get_user_id(self) -> str:
-        raise ValueError("Event has no context!")
+        if self._origin_message:
+            return self._origin_message.get_user_id()
+        raise ValueError("No origin message")
 
     @override
     def get_session_id(self) -> str:
         return f"{self.group_id}_{self.message_id}"
-
-    @override
-    def is_tome(self) -> bool:
-        return False
 
 
 class GroupTransferNotice(NoticeEvent):

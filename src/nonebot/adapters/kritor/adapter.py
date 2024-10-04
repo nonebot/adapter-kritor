@@ -65,7 +65,7 @@ class Adapter(BaseAdapter):
 
     async def _listen_message(self, bot: Bot, service: EventServiceStub):
         async for event in service.register_active_listener(RequestPushEvent(EventType.MESSAGE), timeout=60000):  # type: ignore
-            log("DEBUG", f"Received message event: {event.message}")
+            log("TRACE", f"Received message event: {event.message}")
             message = event.message
             event = type_validate_python(MessageEventType, message.to_dict(casing=Casing.SNAKE))  # type: ignore
             task = asyncio.create_task(bot.handle_event(event))
@@ -75,13 +75,13 @@ class Adapter(BaseAdapter):
     async def _listen_notice(self, bot: Bot, service: EventServiceStub):
         async for event in service.register_active_listener(RequestPushEvent(EventType.NOTICE), timeout=60000):  # type: ignore
             notice = which_one_of(event.notice, "notice")
-            log("DEBUG", f"Received notice event {notice[0]}: {notice[1]}")
+            log("TRACE", f"Received notice event {notice[0]}: {notice[1]}")
             data = {
                 "__type__": notice[0],
                 "time": event.notice.time,
-                **notice[1].to_dict(casing=Casing.SNAKE),  # type: ignore
+                **notice[1].to_dict(casing=Casing.SNAKE, include_default_values=True),  # type: ignore
             }
-            event = type_validate_python(RequestEventType, data)
+            event = type_validate_python(NoticeEventType, data)
             task = asyncio.create_task(bot.handle_event(event))
             self._ref_tasks.add(task)
             task.add_done_callback(self._ref_tasks.discard)
@@ -89,14 +89,13 @@ class Adapter(BaseAdapter):
     async def _listen_request(self, bot: Bot, service: EventServiceStub):
         async for event in service.register_active_listener(RequestPushEvent(EventType.REQUEST), timeout=60000):  # type: ignore
             request = which_one_of(event.request, "request")
-            log("DEBUG", f"Received request event {request[0]}: {request[1]}")
+            log("TRACE", f"Received request event {request[0]}: {request[1]}")
             data = {
                 "__type__": request[0],
                 "time": event.request.time,
-                **request[1].to_dict(casing=Casing.SNAKE),  # type: ignore
+                **request[1].to_dict(casing=Casing.SNAKE, include_default_values=True),  # type: ignore
             }
-            event = type_validate_python(NoticeEventType, data)
-            event.check_tome(bot)
+            event = type_validate_python(RequestEventType, data)
             task = asyncio.create_task(bot.handle_event(event))
             self._ref_tasks.add(task)
             task.add_done_callback(self._ref_tasks.discard)
